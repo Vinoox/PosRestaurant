@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Domain.Enums;
+
+namespace Application.Features.Users.Dtos
+{
+    public class UpdateUserProfileDto
+    {
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public UserRole? Duty { get; set; }
+    }
+}

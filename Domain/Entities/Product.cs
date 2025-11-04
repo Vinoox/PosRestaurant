@@ -21,6 +21,10 @@ namespace Domain.Entities
         private readonly List<ProductIngredient> _productIngredients = [];
         public IReadOnlyCollection<ProductIngredient> ProductIngredients => _productIngredients.AsReadOnly();
 
+
+        public int RestaurantId { get; private set; }
+        public Restaurant Restaurant { get; private set; } = null!;
+
         private Product()
         {
         }

@@ -23,7 +23,7 @@ namespace Application.Features.Users.Dtos
         public void Mapping(Profile profile)
         {
             profile.CreateMap<RegisterUserDto, User>()
-            .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => BCrypt.Net.BCrypt.HashPassword(src.Password)));
+            .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Email));
         }
     }
 }

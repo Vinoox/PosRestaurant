@@ -1,17 +1,19 @@
 ﻿using Domain.Common;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Data
 {
-    public class PosRestaurantContext : DbContext
+    public class PosRestaurantContext : IdentityDbContext<User>
     {
         public PosRestaurantContext(DbContextOptions<PosRestaurantContext> options) : base(options)
         {
         }
 
+        public DbSet<Restaurant> Restaurants { get; set; }
         public DbSet<Category> Categories { get; set; }
 
         public DbSet<Product> Products { get; set; }
@@ -19,8 +21,6 @@ namespace Infrastructure.Data
         public DbSet<Ingredient> Ingredients { get; set; }
 
         public DbSet<ProductIngredient> ProductIngredients { get; set; }
-        public DbSet<User> Users { get; set; }
-
 
 
         // --- SKONFIGURUJ RELACJE ---
