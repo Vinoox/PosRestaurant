@@ -1,4 +1,5 @@
 ﻿using Microsoft.OpenApi.Models;
+using WebAPI.Swagger;
 
 namespace WebAPI.Installers
 {
@@ -6,16 +7,9 @@ namespace WebAPI.Installers
     {
         public void InstallServices(IServiceCollection services, IConfiguration configuration)
         {
-            // === DODAJ SWAGGERA (Początek) ===
-
-            // 1. Ten serwis jest potrzebny, aby Swagger mógł odkrywać i opisywać endpointy API.
             services.AddEndpointsApiExplorer();
-
-            // 2. To jest główny serwis, który generuje dokumentację Swaggera.
             services.AddSwaggerGen(options =>
             {
-                // Ta część jest opcjonalna, ale pozwala zdefiniować tytuł, wersję itp.
-                // co będzie widoczne na stronie UI Swaggera.
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
@@ -24,9 +18,24 @@ namespace WebAPI.Installers
                 });
 
                 options.EnableAnnotations();
-            });
 
-            // === DODAJ SWAGGERA (Koniec) ===
+                // --- POCZĄTEK NOWEGO FRAGMENTU ---
+                // Ten kod "uczy" Swaggera, jak obsługiwać uwierzytelnianie za pomocą tokenów JWT.
+
+                // Krok 1: Definiujemy, jak wygląda nasz schemat bezpieczeństwa.
+                // Mówimy Swaggerowi, że używamy uwierzytelniania typu "Bearer Token",
+                // które jest przekazywane w nagłówku HTTP o nazwie "Authorization".
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Wprowadź token JWT w formacie: Bearer {token}",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                options.OperationFilter<AuthorizeCheckOperationFilter>();
+            });
         }
     }
 }

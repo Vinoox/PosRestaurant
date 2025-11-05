@@ -18,11 +18,7 @@ namespace Application.Features.Users
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IMapper _mapper;
 
-        public UserService(
-            UserManager<User> userManager,
-            IPinHasher pinHasher,
-            IJwtTokenGenerator jwtTokenGenerator,
-            IMapper mapper)
+        public UserService(UserManager<User> userManager, IPinHasher pinHasher, IJwtTokenGenerator jwtTokenGenerator, IMapper mapper)
         {
             _userManager = userManager;
             _pinHasher = pinHasher;
@@ -33,16 +29,12 @@ namespace Application.Features.Users
         public async Task<IdentityResult> RegisterAsync(RegisterUserDto dto)
         {
             var user = User.Create(dto.FirstName, dto.LastName, dto.Email, dto.Duty.Value);
-            var result = await _userManager.CreateAsync(user, dto.Password);
-
-            if (!result.Succeeded)
-            {
-                return result;
-            }
-
             var pinHash = _pinHasher.Hash(dto.Pin);
             user.SetPinHash(pinHash);
-            return await _userManager.UpdateAsync(user);
+
+            var result = await _userManager.CreateAsync(user, dto.Password);
+
+            return result;
         }
 
         public async Task<string> LoginAsync(LoginDto dto)

@@ -12,14 +12,11 @@ namespace Infrastructure.Data
         public PosRestaurantContext(DbContextOptions<PosRestaurantContext> options) : base(options)
         {
         }
-
+        
         public DbSet<Restaurant> Restaurants { get; set; }
         public DbSet<Category> Categories { get; set; }
-
         public DbSet<Product> Products { get; set; }
-
         public DbSet<Ingredient> Ingredients { get; set; }
-
         public DbSet<ProductIngredient> ProductIngredients { get; set; }
 
 
@@ -37,9 +34,6 @@ namespace Infrastructure.Data
                 // ma być typu decimal z precyzją 18 i skalą 2.
                 entity.Property(p => p.Price).HasColumnType("decimal(18, 2)");
             });
-
-
-
 
             // --- Konfiguracja dla ProductIngredient ---
 
@@ -64,34 +58,48 @@ namespace Infrastructure.Data
         }
 
 
-        // --- DODANA METODA DO AUTOMATYCZNEGO USTAWIANIA DAT ---
+        // --- ZMIANA: PRZEBUDOWANA LOGIKA ZAPISYWANIA ZMIAN ---
+
+        /// <summary>
+        /// Przesłonięcie standardowej metody SaveChangesAsync.
+        /// Najpierw uruchamia naszą logikę audytową, a następnie wywołuje bazową implementację.
+        /// </summary>
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // Przechodzimy przez wszystkie encje, które EF Core śledzi
-            // i które dziedziczą po naszej klasie bazowej AuditableEntity.
+            SetAuditProperties();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Przesłonięcie DRUGIEJ, bardziej złożonej wersji SaveChangesAsync.
+        /// Robimy to, aby mieć pewność, że nasza logika audytowa zadziała ZAWSZE,
+        /// niezależnie od tego, jakiej wersji metody użyje framework (np. UserManager).
+        /// </summary>
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            SetAuditProperties();
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        /// <summary>
+        /// Prywatna metoda pomocnicza, która zawiera logikę ustawiania pól audytowych (CreatedAt, LastModified).
+        /// Używamy jej, aby uniknąć powtarzania tego samego kodu w obu wersjach SaveChangesAsync.
+        /// </summary>
+        private void SetAuditProperties()
+        {
             foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
             {
-                // Używamy instrukcji switch, aby sprawdzić, czy encja jest
-                // nowo dodawana (Added) czy modyfikowana (Modified).
                 switch (entry.State)
                 {
-                    // Przypadek 1: Nowy rekord jest dodawany do bazy.
                     case EntityState.Added:
-                        // Automatycznie ustawiamy datę utworzenia na aktualny czas UTC.
                         entry.Entity.CreatedAt = DateTime.UtcNow;
                         break;
 
-                    // Przypadek 2: Istniejący rekord jest modyfikowany.
                     case EntityState.Modified:
-                        // Automatycznie ustawiamy datę ostatniej modyfikacji.
                         entry.Entity.LastModified = DateTime.UtcNow;
                         break;
                 }
             }
-
-            // Na końcu wywołujemy oryginalną metodę SaveChangesAsync z klasy bazowej,
-            // która fizycznie zapisze zmiany (wraz z naszymi nowymi datami) do bazy danych.
-            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }
