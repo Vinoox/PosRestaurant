@@ -1,5 +1,5 @@
-﻿using Application.Features.Users;
-using Application.Features.Users.Dtos;
+﻿using Application.Features.Users.Dtos.Commands;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;

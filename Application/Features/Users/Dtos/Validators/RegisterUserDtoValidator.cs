@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Application.Features.Users.Dtos.Commands;
+using FluentValidation;
 
 namespace Application.Features.Users.Dtos.Validators
 {
@@ -29,9 +30,6 @@ namespace Application.Features.Users.Dtos.Validators
                 .NotEmpty().WithMessage("PIN jest wymagany.")
                 .Length(4).WithMessage("PIN musi składać się z dokładnie 4 cyfr.")
                 .Matches("^[0-9]{4}$").WithMessage("PIN może zawierać tylko cyfry.");
-
-            RuleFor(dto => dto.Duty)
-                .IsInEnum().WithMessage("Nieprawidłowa rola użytkownika.");
         }
     }
 }

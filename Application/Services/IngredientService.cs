@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Features.Ingredients.Dtos;
+using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 
-namespace Application.Features.Ingredients
+namespace Application.Services
 {
     public class IngredientService : IIngredientService
     {

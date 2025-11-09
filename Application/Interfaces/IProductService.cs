@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Application.Features.Products.Dtos;
 using Domain.Interfaces;
 
-namespace Application.Features.Products
+namespace Application.Interfaces
 {
     public interface IProductService
     {

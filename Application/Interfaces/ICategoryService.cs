@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.Features.Categories.Dtos;
 
-namespace Application.Features.Categories
+namespace Application.Interfaces
 {
     public interface ICategoryService
     {

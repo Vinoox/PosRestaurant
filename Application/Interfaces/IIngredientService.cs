@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.Features.Ingredients.Dtos;
 
-namespace Application.Features.Ingredients
+namespace Application.Interfaces
 {
     public interface IIngredientService
     {

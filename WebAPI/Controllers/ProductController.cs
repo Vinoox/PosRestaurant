@@ -1,5 +1,5 @@
-﻿using Application.Features.Products;
-using Application.Features.Products.Dtos;
+﻿using Application.Features.Products.Dtos;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Threading.Tasks;

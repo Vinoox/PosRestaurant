@@ -8,19 +8,21 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Enums;
 
-namespace Application.Features.Users.Dtos
+namespace Application.Features.Users.Dtos.Commands
 {
-    public class UserDto : IMap
+    public class RegisterUserDto : IMap
     {
-        public string Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
-        public UserRole Duty { get; set; }
+        public string Password { get; set; }
+        public string ConfirmPassword { get; set; }
+        public string Pin { get; set; }
 
         public void Mapping(Profile profile)
         {
-            profile.CreateMap<User, UserDto>();
+            profile.CreateMap<RegisterUserDto, User>()
+            .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Email));
         }
     }
 }

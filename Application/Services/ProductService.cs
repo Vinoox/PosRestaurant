@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Features.Products.Dtos;
+using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using FluentValidation;
 
-namespace Application.Features.Products
+namespace Application.Services
 {
     public class ProductService : IProductService
     {

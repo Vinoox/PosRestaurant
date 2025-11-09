@@ -5,6 +5,7 @@ namespace Application.Interfaces
 {
     public interface IJwtTokenGenerator
     {
-        string GenerateToken(User user, IEnumerable<string> roles);
+        string GenerateAuthenticationToken(User user, IEnumerable<string> globalRoles);
+        string GenerateContextualToken(User user, int restaurantId, IEnumerable<string> restaurantRoles);
     }
 }

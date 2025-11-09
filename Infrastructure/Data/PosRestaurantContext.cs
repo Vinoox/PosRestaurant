@@ -18,43 +18,89 @@ namespace Infrastructure.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<ProductIngredient> ProductIngredients { get; set; }
+        public DbSet<StaffAssignment> StaffAssignments { get; set; }
 
 
         // --- SKONFIGURUJ RELACJE ---
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
+            base.OnModelCreating(modelBuilder); //konieczne dla IdentityDbContext
 
             // --- Konfiguracja dla Product ---
             modelBuilder.Entity<Product>(entity =>
             {
-                // TO JEST ROZWIĄZANIE:
-                // Jawnie mówimy EF, że kolumna 'Price' w bazie danych
-                // ma być typu decimal z precyzją 18 i skalą 2.
                 entity.Property(p => p.Price).HasColumnType("decimal(18, 2)");
+                
+                entity.HasOne(p => p.Restaurant)
+                      .WithMany(r => r.Products)
+                      .HasForeignKey(p => p.RestaurantId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            
+                entity.HasOne(p => p.Category)
+                      .WithMany(c => c.Products)
+                      .HasForeignKey(p => p.CategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // --- Konfiguracja dla ProductIngredient ---
+            // --- Konfiguracja dla Category ---
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.HasOne(c => c.Restaurant)
+                      .WithMany(r => r.Categories)
+                      .HasForeignKey(c => c.RestaurantId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
 
-            // 1. Zdefiniuj klucz złożony (Composite Primary Key)
-            // Mówimy EF, że unikalnym identyfikatorem wiersza w tej tabeli
-            // jest kombinacja ProductId i IngredientId. Nie można mieć dwa razy
-            // tego samego składnika dla tego samego produktu.
-            modelBuilder.Entity<ProductIngredient>()
-                .HasKey(pi => new { pi.ProductId, pi.IngredientId });
+            // --- Konfiguracja dla ProductIngredient (tabela łącząca wiele-do-wielu) ---
+            modelBuilder.Entity<ProductIngredient>(entity =>
+            {
+                entity.HasKey(pi => new { pi.ProductId, pi.IngredientId });
 
-            // 2. Skonfiguruj relację "od strony" Product
-            modelBuilder.Entity<ProductIngredient>()
-                .HasOne(pi => pi.Product) // Każdy wpis w ProductIngredient ma JEDEN Produkt...
-                .WithMany(p => p.ProductIngredients) // ...a każdy Produkt ma WIELE wpisów w ProductIngredient.
-                .HasForeignKey(pi => pi.ProductId); // Łączy je klucz ProductId.
+                entity.HasOne(pi => pi.Product)
+                      .WithMany(p => p.ProductIngredients)
+                      .HasForeignKey(pi => pi.ProductId);
 
-            // 3. Skonfiguruj relację "od strony" Ingredient
-            modelBuilder.Entity<ProductIngredient>()
-                .HasOne(pi => pi.Ingredient) // Każdy wpis w ProductIngredient ma JEDEN Składnik...
-                .WithMany() // ...a każdy Składnik może być w WIELE wpisów (ale nie potrzebujemy listy w encji Ingredient).
-                .HasForeignKey(pi => pi.IngredientId); // Łączy je klucz IngredientId.
+                entity.HasOne(pi => pi.Ingredient)
+                      .WithMany()
+                      .HasForeignKey(pi => pi.IngredientId);
+            });
+
+
+            //modelBuilder.Entity<User>(entity =>
+            //{
+            //    entity.HasMany(u => u.Restaurants)
+            //          .WithMany(r => r.Staff)
+            //          .UsingEntity<StaffAssignment>(
+            //              j => j
+            //                  .HasOne(sa => sa.Restaurant)
+            //                  .WithMany()
+            //                  .HasForeignKey(sa => sa.RestaurantId),
+            //              j => j
+            //                  .HasOne(sa => sa.User)
+            //                  .WithMany()
+            //                  .HasForeignKey(sa => sa.UserId),
+            //              j =>
+            //              {
+            //                  j.HasKey(sa => new { sa.UserId, sa.RestaurantId, sa.RoleId });
+            //                  j.HasOne(sa => sa.Role)
+            //                  .WithMany()
+            //                  .HasForeignKey(sa => sa.RoleId);
+            //              });
+            //});
+
+            modelBuilder.Entity<StaffAssignment>(entity =>
+            {
+                entity.HasKey(sa => new { sa.UserId, sa.RestaurantId, sa.RoleId });
+                entity.HasOne(sa => sa.User)
+                      .WithMany(u => u.StaffAssignments)
+                      .HasForeignKey(sa => sa.UserId);
+                entity.HasOne(sa => sa.Restaurant)
+                      .WithMany(r => r.StaffAssignments)
+                      .HasForeignKey(sa => sa.RestaurantId);
+                entity.HasOne(sa => sa.Role)
+                      .WithMany()
+                      .HasForeignKey(sa => sa.RoleId);
+            });
         }
 
 

@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Application.Features.Users.Dtos.Commands;
+using FluentValidation;
 
 namespace Application.Features.Users.Dtos.Validators
 {
@@ -14,6 +15,10 @@ namespace Application.Features.Users.Dtos.Validators
                 .NotEmpty().WithMessage("PIN jest wymagany.")
                 .Length(4).WithMessage("PIN musi składać się z dokładnie 4 cyfr.")
                 .Matches("^[0-9]{4}$").WithMessage("PIN może zawierać tylko cyfry.");
+
+            //RuleFor(x => x.RestaurantId)
+            //    .NotEmpty().WithMessage("Id restauracji jest wymagane.")
+            //    .GreaterThan(0).WithMessage("Id restauracji musi być większe od zera.");
         }
     }
 }

@@ -10,9 +10,6 @@ using System.Text;
 
 namespace Infrastructure.Services
 {
-    /// <summary>
-    /// Implementuje logikę tworzenia i podpisywania tokenów JWT.
-    /// </summary>
     public class JwtTokenGenerator : IJwtTokenGenerator
     {
         private readonly IConfiguration _configuration;
@@ -23,37 +20,61 @@ namespace Infrastructure.Services
             _configuration = configuration;
         }
 
-        public string GenerateToken(User user, IEnumerable<string> roles)
+        public string GenerateAuthenticationToken(User user, IEnumerable<string> globalRoles)
         {
-            // 1. Stwórz listę "oświadczeń" (claims), czyli informacji, które zapiszemy w tokenie.
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id), // Standardowy claim: Subject (Identyfikator użytkownika)
-                new Claim(JwtRegisteredClaimNames.Email, user.Email), // Standardowy claim: Email
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email)
             };
 
-            // 2. Dodaj role użytkownika do listy oświadczeń.
-            foreach (var role in roles)
+            foreach (var role in globalRoles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
-
             // 3. Pobierz super-tajny klucz z appsettings.json i zamień go na bajty.
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-
             // 4. Stwórz "kredencjały" do podpisania tokenu, używając klucza i algorytmu HMAC-SHA256.
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             // 5. Stwórz obiekt tokenu, podając wszystkie potrzebne informacje.
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],       // Kto wydał token (nasza aplikacja)
                 audience: _configuration["Jwt:Audience"],   // Dla kogo jest token (nasza aplikacja)
                 claims: claims,                             // Lista oświadczeń
-                expires: DateTime.UtcNow.AddHours(1),       // Kiedy token wygasa
+                expires: DateTime.UtcNow.AddMinutes(5),       // Kiedy token wygasa
+                signingCredentials: creds                   // Jak go podpisać
+            );
+            // 6. Zamień obiekt tokenu na finalny, zaszyfrowany string.
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public string GenerateContextualToken(User user, int restaurantId, IEnumerable<string> restaurantRoles)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("restaurantId", restaurantId.ToString())
+            };
+
+            foreach (var role in restaurantRoles)
+            {
+                claims.Add(new Claim("restaurant_role", role));
+            }
+
+            // 3. Pobierz super-tajny klucz z appsettings.json i zamień go na bajty.
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            // 4. Stwórz "kredencjały" do podpisania tokenu, używając klucza i algorytmu HMAC-SHA256.
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            // 5. Stwórz obiekt tokenu, podając wszystkie potrzebne informacje.
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],       // Kto wydał token (nasza aplikacja)
+                audience: _configuration["Jwt:Audience"],   // Dla kogo jest token (nasza aplikacja)
+                claims: claims,                             // Lista oświadczeń
+                expires: DateTime.UtcNow.AddHours(12),       // Kiedy token wygasa
                 signingCredentials: creds                   // Jak go podpisać
             );
 
-            // 6. Zamień obiekt tokenu na finalny, zaszyfrowany string.
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Application.Features.Ingredients;
 using Application.Features.Ingredients.Dtos;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 

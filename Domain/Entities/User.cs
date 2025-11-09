@@ -9,17 +9,13 @@ namespace Domain.Entities
     {
         public string FirstName { get; private set; } = null!;
         public string LastName { get; private set; } = null!;
-        public string PinHash { get; private set; } = null!;
-        public UserRole Duty { get; private set; }
-
-        public int? RestaurantId { get; set; }
-        public Restaurant? Restaurant { get; set; }
-
+        public string? PinHash { get; private set; } = null!;
+        public ICollection<StaffAssignment> StaffAssignments { get; set; } = new List<StaffAssignment>();
         private User()
         {
         }
 
-        public static User Create(string firstName, string lastName, string email, UserRole duty)
+        public static User Create(string firstName, string lastName, string email)
         {
             if (string.IsNullOrWhiteSpace(firstName))
                 throw new ArgumentException("First name cannot be empty.", nameof(firstName));
@@ -34,22 +30,18 @@ namespace Domain.Entities
             {
                 FirstName = NormalizeString(firstName),
                 LastName = NormalizeString(lastName),
-                Duty = duty,
                 Email = email.ToLower(),
                 UserName = email.ToLower()
             };
         }
 
-        public void UpdateProfile(string? firstName, string? lastName, UserRole? duty)
+        public void UpdateProfile(string? firstName, string? lastName)
         {
             if (!string.IsNullOrWhiteSpace(firstName))
                 FirstName = NormalizeString(firstName);
 
             if (!string.IsNullOrWhiteSpace(lastName))
                 LastName = NormalizeString(lastName);
-
-            if (duty.HasValue)
-                Duty = duty.Value;
         }
 
         public void SetPinHash(string newPinHash)

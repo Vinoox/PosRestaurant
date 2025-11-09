@@ -1,13 +1,16 @@
-﻿using Application.Features.Users;
-using Application.Features.Users.Dtos;
+﻿using Application.Features.Users.Dtos.Commands;
+using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace WebAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -32,28 +35,35 @@ namespace WebAPI.Controllers
             return Ok(new { Message = "Rejestracja pomyślna." });
         }
 
-        [SwaggerOperation(Summary = "Login with email and password")]
-        [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto dto)
+        [HttpPost("authenticate")]
+        [SwaggerOperation(Summary = "Step 1: Authenticates a user and returns available restaurants")]
+        public async Task<IActionResult> Authenticate(AuthenticateDto dto)
         {
-            try
+            // ZMIANA: Poprawiona składnia i nazwy zmiennych
+            var result = await _userService.AuthenticateAsync(dto);
+
+            if (result == null)
             {
-                var token = await _userService.LoginAsync(dto);
-                return Ok(new { Token = token });
+                return Unauthorized(new { Message = "Nieprawidłowy email lub hasło." });
             }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { Message = ex.Message });
-            }
+
+            return Ok(result);
         }
 
-        [SwaggerOperation(Summary = "Login with email and PIN")]
-        [HttpPost("login-by-pin")]
-        public async Task<IActionResult> LoginByPin(LoginByPinDto dto)
+        [HttpPost("select-restaurant")]
+        [Authorize]
+        [SwaggerOperation(Summary = "Step 2: Selects a restaurant context and returns the final JWT")]
+        public async Task<IActionResult> SelectRestaurant(SelectRestaurantDto dto)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Nieprawidłowy token uwierzytelniający.");
+            }
+
             try
             {
-                var token = await _userService.LoginByPinAsync(dto);
+                var token = await _userService.GenerateContextualTokenAsync(userId, dto.RestaurantId);
                 return Ok(new { Token = token });
             }
             catch (UnauthorizedAccessException ex)

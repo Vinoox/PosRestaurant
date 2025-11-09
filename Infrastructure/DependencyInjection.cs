@@ -22,9 +22,11 @@ namespace Infrastructure
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IIngredientRepository, IngredientRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
-
+            services.AddScoped<IRestaurantRepository, RestaurantRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPinHasher, PinHasher>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+            services.AddScoped<IStaffAssignmentRepository, StaffAssignmentRepository>();
             return services;
         }
 

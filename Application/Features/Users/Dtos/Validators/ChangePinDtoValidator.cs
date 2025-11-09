@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Application.Features.Users.Dtos.Commands;
+using FluentValidation;
 
 namespace Application.Features.Users.Dtos.Validators
 {

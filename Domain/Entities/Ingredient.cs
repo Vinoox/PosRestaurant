@@ -11,8 +11,9 @@ namespace Domain.Entities
     public class Ingredient : AuditableEntity
     {
         public string Name { get; set; }
-        
         public Unit Unit {get; set;}
+        public int RestaurantId { get; set; }
+        public Restaurant Restaurant { get; set; }
 
         public Ingredient() { }
     }

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="Features\Orders\" />
+    <Folder Include="Features\Restaurants\Dtos\Validators\" />
   </ItemGroup>
 
 </Project>

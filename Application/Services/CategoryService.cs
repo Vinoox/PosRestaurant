@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Features.Categories.Dtos;
+using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 
-namespace Application.Features.Categories
+namespace Application.Services
 {
     public class CategoryService : ICategoryService
     {

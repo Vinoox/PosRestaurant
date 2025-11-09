@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Enums;
 
-namespace Application.Features.Users.Dtos
+namespace Application.Features.Users.Dtos.Commands
 {
     public class UpdateUserProfileDto
     {
