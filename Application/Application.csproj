@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <Folder Include="Features\Orders\" />
-    <Folder Include="Features\Restaurants\Dtos\Validators\" />
+    <Folder Include="Features\StaffManagement\Dtos\Queries\" />
   </ItemGroup>
 
 </Project>

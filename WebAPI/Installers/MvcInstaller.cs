@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Application.Features.Users.Dtos.Commands;
+using WebAPI.Middleware;
+using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Installers
 {
@@ -19,6 +21,8 @@ namespace WebAPI.Installers
     {
         public void InstallServices(IServiceCollection services, IConfiguration configuration)
         {
+            services.AddScoped<ErrorHandlingMiddleware>();
+
             services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -60,13 +64,18 @@ namespace WebAPI.Installers
             services.AddApplication();
             services.AddInfrastructure();
             services.AddRazorPages();
+
             services.AddControllers()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                 });
+            services.Configure<ApiBehaviorOptions>(options =>
+                {
+                    options.SuppressModelStateInvalidFilter = true;
+                });
             services.AddValidatorsFromAssemblyContaining<RegisterUserDto>();
-            services.AddFluentValidationAutoValidation();
+            //services.AddFluentValidationAutoValidation();
         }
     }
 }

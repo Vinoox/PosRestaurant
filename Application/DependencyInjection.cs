@@ -20,6 +20,7 @@ namespace Application
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IIngredientService, IngredientService>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IStaffManagementService, StaffManagementService>();
 
             return services;
         }

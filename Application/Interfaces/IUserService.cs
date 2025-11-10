@@ -1,5 +1,6 @@
 ﻿using Application.Features.Users.Dtos.Commands;
 using Application.Features.Users.Dtos.Queries;
+using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,7 +17,9 @@ namespace Application.Interfaces
         Task UpdateProfileAsync(string userId, UpdateUserProfileDto dto);
         Task ChangePinAsync(string userId, ChangePinDto dto);
         Task DeleteAsync(string userId);
-        Task<UserDto?> GetUserByIdAsync(string userId);
+        Task<UserDto?> GetByIdAsync(string userId);
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
+        Task<User> FindByEmailOrThrowAsync(string email);
+        Task<User> FindByIdOrThrowAsync(string userId);
     }
 }

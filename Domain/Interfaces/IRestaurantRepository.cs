@@ -12,7 +12,5 @@ namespace Domain.Interfaces
         Task<Restaurant?> GetByIdAsync(int id);
         Task CreateAsync(Restaurant restaurant);
         Task<IEnumerable<Restaurant>> FindByUserIdAsync(string userId);
-        //Task AddStaff(string userId, string roleId);
-        //Task removeStaff(string userId);
     }
 }

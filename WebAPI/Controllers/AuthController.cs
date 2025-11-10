@@ -61,15 +61,8 @@ namespace WebAPI.Controllers
                 return Unauthorized("Nieprawidłowy token uwierzytelniający.");
             }
 
-            try
-            {
-                var token = await _userService.GenerateContextualTokenAsync(userId, dto.RestaurantId);
-                return Ok(new { Token = token });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(new { Message = ex.Message });
-            }
+            var token = await _userService.GenerateContextualTokenAsync(userId, dto.RestaurantId);
+            return Ok(new { Token = token });
         }
     }
 }

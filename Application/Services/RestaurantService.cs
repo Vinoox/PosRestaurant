@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.Common.Exceptions;
 using Application.Features.Restaurants.Dtos;
 using Application.Features.Restaurants.Dtos.Commands;
 using Application.Features.Restaurants.Dtos.Queries;
@@ -26,8 +27,12 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IStaffAssignmentRepository _staffAssignmentRepository;
+        private readonly IUserService _userService;
+        private readonly IStaffManagementService _staffManagementService;
+        private readonly IRestaurantService restaurantService;
 
         public RestaurantService(
+            IStaffManagementService staffManagementService,
             IRestaurantRepository restaurantRepository,
             IProductRepository productRepository,
             IIngredientRepository ingredientRepository,
@@ -36,8 +41,10 @@ namespace Application.Services
             RoleManager<IdentityRole> roleManager,
             IMapper mapper,
             IStaffAssignmentRepository staffAssignmentRepository,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IUserService userService)
         {
+            _staffManagementService = staffManagementService;
             _restaurantRepository = restaurantRepository;
             _productRepository = productRepository;
             _ingredientRepository = ingredientRepository;
@@ -47,66 +54,25 @@ namespace Application.Services
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _staffAssignmentRepository = staffAssignmentRepository;
+            _userService = userService;
         }
 
-        public async Task AddStaffMemberAsync(int id, AddStaffMemberDto dto)
-        {
-            await _unitOfWork.BeginTransactionAsync();
-            {
-                try
-                {
-                    var userToAdd = await _userManager.FindByEmailAsync(dto.Email);
-                    if (userToAdd == null)
-                        throw new Exception($"Użytkownik o emailu '{dto.Email}' nie został znaleziony.");
-
-                    var restaurant = await _restaurantRepository.GetByIdAsync(id);
-                    if (restaurant == null)
-                        throw new Exception($"Restauracja o ID '{id}' nie została znaleziona.");
-
-                    var role = await _roleManager.FindByNameAsync(dto.RoleName);
-                    if (role == null)
-                        throw new Exception($"Rola '{dto.RoleName}' nie została znaleziona.");
-
-                    var existingAssignment = await _staffAssignmentRepository.GetByUserIdAndRestaurantIdAsync(userToAdd.Id, restaurant.Id);
-                    if (existingAssignment != null)
-                        throw new Exception($"Użytkownik '{dto.Email}' jest już przypisany do restauracji '{restaurant.Name}'.");
-
-                    var assignment = StaffAssignment.Create(userToAdd, restaurant, role);
-                    await _staffAssignmentRepository.AddAsync(assignment);
-
-                    await _unitOfWork.CommitTransactionAsync();
-                }
-                catch (Exception)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    throw;
-                }
-            }
-        }
 
         public async Task<int> CreateAsync(CreateRestaurantDto dto, string creatorUserId)
         {
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var creatorUser = await _userManager.FindByIdAsync(creatorUserId);
-                if (creatorUser == null)
-                {
-                    throw new InvalidOperationException($"User with ID {creatorUserId} does not exist.");
-                }
-
+                var creatorUser = await _userService.FindByIdOrThrowAsync(creatorUserId);
                 var restaurant = Restaurant.Create(dto.Name);
+
                 await _restaurantRepository.CreateAsync(restaurant);
 
-                var adminRole = await _roleManager.FindByNameAsync("RestaurantAdmin");
-
-                var assignment = StaffAssignment.Create(creatorUser, restaurant, adminRole);
-
-                await _staffAssignmentRepository.AddAsync(assignment);
+                await _staffManagementService.AddInitialMemberAsync(restaurant, creatorUser);
                 await _unitOfWork.CommitTransactionAsync();
                 return restaurant.Id;
             }
-            catch (Exception)
+            catch
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 throw;
@@ -117,12 +83,17 @@ namespace Application.Services
         {
             var restaurant = await _restaurantRepository.GetByIdAsync(id);
 
-            if (restaurant == null)
-            {
-                return null;
-            }
 
             return _mapper.Map<RestaurantDto>(restaurant);
+        }
+
+        public async Task<Restaurant> FindByIdOrThrowAsync(int id)
+        {
+            var restaurant = await _restaurantRepository.GetByIdAsync(id);
+            if (restaurant == null)
+                throw new NotFoundException("Restaurant", id);
+            
+            return restaurant;
         }
 
         public async Task<IEnumerable<RestaurantSummaryDto>> GetByUserIdAsync(string userId)
@@ -131,6 +102,35 @@ namespace Application.Services
             return _mapper.Map<IEnumerable<RestaurantSummaryDto>>(restaurants);
         }
 
-        
+        //public async Task ChangeStaffMemberRoleAsync(int restaurantId, ChangeStaffMemberRoleDto dto)
+        //{
+        //    await _unitOfWork.BeginTransactionAsync();
+        //    try
+        //    {
+        //        var userToUpdate = await _userManager.FindByEmailAsync(dto.Email);
+        //        if (userToUpdate == null)
+        //            throw new NotFoundException($"Użytkownik o emailu '{dto.Email}' nie został znaleziony.");
+
+        //        var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
+        //        if (restaurant == null)
+        //            throw new NotFoundException($"Restauracja o ID '{restaurantId}' nie została znaleziona.");
+
+        //        var newRole = await _roleManager.FindByNameAsync(dto.NewRole);
+        //        if (newRole == null)
+        //            throw new BadRequestException($"Rola '{dto.NewRole}' nie została znaleziona.");
+
+        //        var existingAssignment = await _staffAssignmentRepository.GetByUserIdAndRestaurantIdAsync(userToUpdate.Id, restaurant.Id);
+        //        if (existingAssignment == null)
+        //            throw new BadRequestException($"Użytkownik '{dto.Email}' nie jest przypisany do restauracji '{restaurant.Name}'.");
+
+        //        await _staffAssignmentRepository.ChangeRole(existingAssignment, newRole);
+        //        await _unitOfWork.CommitTransactionAsync();
+        //    }
+        //    catch (Exception)
+        //    {
+        //        await _unitOfWork.RollbackTransactionAsync();
+        //        throw;
+        //    }
+        //}
     }
 }

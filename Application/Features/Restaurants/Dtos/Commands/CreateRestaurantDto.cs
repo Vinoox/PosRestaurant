@@ -8,6 +8,6 @@ namespace Application.Features.Restaurants.Dtos.Commands
 {
     public class CreateRestaurantDto
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
     }
 }

@@ -9,16 +9,16 @@ namespace Domain.Entities
 {
     public class StaffAssignment
     {
-        public string UserId { get; private set; } = null!;
-        public User User { get; private set; } = null!;
+        public string UserId { get;  set; } = null!;
+        public User User { get;  set; } = null!;
 
-        public int RestaurantId { get; private set; }
-        public Restaurant Restaurant { get; private set; } = null!;
+        public int RestaurantId { get;  set; }
+        public Restaurant Restaurant { get;  set; } = null!;
 
-        public string RoleId { get; private set; } = null!;
-        public IdentityRole Role { get; private set; } = null!;
+        public string RoleId { get;  set; } = null!;
+        public IdentityRole Role { get;  set; } = null!;
     
-        private StaffAssignment()
+        public StaffAssignment()
         {
         }
 

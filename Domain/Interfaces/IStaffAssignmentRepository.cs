@@ -9,8 +9,9 @@ namespace Domain.Interfaces
 {
     public interface IStaffAssignmentRepository
     {
-        Task<StaffAssignment?> GetByUserIdAndRestaurantIdAsync(string userId, int restaurantId);
-        Task AddAsync(StaffAssignment staffAssignment);
+        Task<StaffAssignment?> FindByUserIdAndRestaurantIdAsync(string userId, int restaurantId);
         Task<IEnumerable<StaffAssignment>> GetByRestaurantIdAsync(int restaurantId);
+        void Add(StaffAssignment staffAssignment);
+        void Remove(StaffAssignment staffAssignment);
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Application.Features.Restaurants.Dtos;
 using Application.Features.Restaurants.Dtos.Commands;
 using Application.Features.Restaurants.Dtos.Queries;
+using Domain.Entities;
 
 namespace Application.Interfaces
 {
@@ -15,8 +16,8 @@ namespace Application.Interfaces
 
         Task<RestaurantDto?> GetByIdAsync(int id);
 
-        Task<IEnumerable<RestaurantSummaryDto>> GetByUserIdAsync(string userId);
+        Task<Restaurant> FindByIdOrThrowAsync(int id);
 
-        Task AddStaffMemberAsync(int id, AddStaffMemberDto dto);
+        Task<IEnumerable<RestaurantSummaryDto>> GetByUserIdAsync(string userId);
     }
 }

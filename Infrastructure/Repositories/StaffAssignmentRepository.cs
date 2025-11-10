@@ -17,13 +17,7 @@ namespace Infrastructure.Repositories
         {
             _context = context;
         }
-
-        public async Task AddAsync(StaffAssignment staffAssignment)
-        {
-            _context.Entry(staffAssignment).State = EntityState.Added;
-        }
-
-        public async Task<StaffAssignment?> GetByUserIdAndRestaurantIdAsync(string userId, int restaurantId)
+        public async Task<StaffAssignment?> FindByUserIdAndRestaurantIdAsync(string userId, int restaurantId)
         {
             return await _context.StaffAssignments
                 .Include(sa => sa.Role)
@@ -37,6 +31,16 @@ namespace Infrastructure.Repositories
                 .Include(sa => sa.Role)
                 .Where(sa => sa.RestaurantId == restaurantId)
                 .ToListAsync();
+        }
+
+        public void Add(StaffAssignment staffAssignment)
+        {
+            _context.Entry(staffAssignment).State = EntityState.Added;
+        }
+
+        public void Remove(StaffAssignment staffAssignment)
+        {
+            _context.Entry(staffAssignment).State = EntityState.Deleted;
         }
     }
 }

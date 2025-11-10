@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Application.Features.Restaurants.Dtos.Commands;
+using Application.Features.StaffManagement.Dtos.Commands;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,19 @@ namespace WebAPI.Controllers
         public RestaurantsController(IRestaurantService restaurantService)
         {
             _restaurantService = restaurantService;
+        }
+
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        [SwaggerOperation(Summary = "Get restaurant by ID")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var restaurant = await _restaurantService.GetByIdAsync(id);
+            if (restaurant == null)
+            {
+                return NotFound();
+            }
+            return Ok(restaurant);
         }
 
         [HttpPost]
@@ -44,42 +58,48 @@ namespace WebAPI.Controllers
             }
         }
 
-        [HttpPost("{restaurantId}/staff")]
-        [Authorize(Policy = "IsRestaurantAdmin")]
-        [SwaggerOperation(Summary = "Add a staff member to a restaurant")]
-        public async Task<IActionResult> AddStaffMember([FromRoute] int restaurantId, [FromBody] AddStaffMemberDto dto)
-        {
-            var adminRestaurantIdClaim = User.FindFirst("restaurantId");
-            if (adminRestaurantIdClaim == null || adminRestaurantIdClaim.Value != restaurantId.ToString())
-            {
-                return Forbid("Nie masz uprawnień do zarządzania tą restauracją");
-            }
-            try
-            {
-                await _restaurantService.AddStaffMemberAsync(restaurantId, dto);
-                return NoContent();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Message = "An error occurred while adding the staff member.", Details = ex.Message });
-            }
-        }
+        //[HttpPost("{restaurantId}/staff")]
+        //[Authorize(Policy = "IsRestaurantAdmin")]
+        //[SwaggerOperation(Summary = "Add a staff member to a restaurant")]
+        //public async Task<IActionResult> AddStaffMember([FromRoute] int restaurantId, [FromBody] AddStaffMemberDto dto)
+        //{
+        //    var adminRestaurantIdClaim = User.FindFirst("restaurantId");
+        //    if (adminRestaurantIdClaim == null || adminRestaurantIdClaim.Value != restaurantId.ToString())
+        //    {
+        //        return Forbid("Nie masz uprawnień do zarządzania tą restauracją");
+        //    }
 
-        [HttpGet("{id}")]
-        [AllowAnonymous]
-        [SwaggerOperation(Summary = "Get restaurant by ID")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var restaurant = await _restaurantService.GetByIdAsync(id);
-            if (restaurant == null)
-            {
-                return NotFound();
-            }
-            return Ok(restaurant);
-        }
+        //    await _restaurantService.AddStaffMemberAsync(restaurantId, dto);
+        //    return NoContent();
+        //}
+
+        //[HttpPost("{restaurantId}/staff")]
+        //[Authorize(Policy = "IsRestaurantAdmin")]
+        //[SwaggerOperation(Summary = "Remove a staff member from a restaurant")]
+        //public async Task<IActionResult> RemoveStaffMember([FromRoute] int restaurantId, [FromBody] RemoveStaffMemberDto dto)
+        //{
+        //    var adminRestaurantIdClaim = User.FindFirst("restaurantId");
+        //    if (adminRestaurantIdClaim == null || adminRestaurantIdClaim.Value != restaurantId.ToString())
+        //    {
+        //        return Forbid("Nie masz uprawnień do zarządzania tą restauracją");
+        //    }
+        //    await _restaurantService.RemoveStaffMemberAsync(restaurantId, dto);
+        //    return NoContent();
+        //}
+
+        //[HttpPut("{restaurantId}/staff")]
+        //[Authorize(Policy = "IsRestaurantAdmin")]
+        //[SwaggerOperation(Summary = "Change a staff member role in restaurant")]
+
+        //public async Task<IActionResult> ChangeStaffMemberRole([FromRoute] int restaurantId, [FromBody] ChangeStaffMemberRoleDto dto)
+        //{
+        //    var adminRestaurantIdClaim = User.FindFirst("restaurantId");
+        //    if (adminRestaurantIdClaim == null || adminRestaurantIdClaim.Value != restaurantId.ToString())
+        //    {
+        //        return Forbid("Nie masz uprawnień do zarządzania tą restauracją");
+        //    }
+        //    await _restaurantService.ChangeStaffMemberRoleAsync(restaurantId, dto);
+        //    return NoContent();
+        //}
     }
 }

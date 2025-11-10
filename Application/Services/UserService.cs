@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Application.Common.Exceptions;
+using Application.Features.Restaurants.Dtos.Queries;
 using Application.Features.Users.Dtos.Commands;
 using Application.Features.Users.Dtos.Queries;
 using Application.Interfaces;
@@ -18,16 +20,25 @@ namespace Application.Services
         private readonly IPinHasher _pinHasher;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IMapper _mapper;
-        private readonly IRestaurantService _restaurantService;
+        //private readonly IRestaurantService _restaurantService;
+        private readonly IRestaurantRepository _restaurantRepository;
         private readonly IStaffAssignmentRepository _staffAssignmentRepository;
 
-        public UserService(UserManager<User> userManager, IPinHasher pinHasher, IJwtTokenGenerator jwtTokenGenerator, IMapper mapper, IRestaurantService restaurantService, IStaffAssignmentRepository staffAssignmentRepository)
+        public UserService(
+            UserManager<User> userManager,
+            IPinHasher pinHasher,
+            IJwtTokenGenerator jwtTokenGenerator,
+            IMapper mapper,
+            //IRestaurantService restaurantService,
+            IRestaurantRepository restaurantRepository,
+            IStaffAssignmentRepository staffAssignmentRepository)
         {
             _userManager = userManager;
             _pinHasher = pinHasher;
             _jwtTokenGenerator = jwtTokenGenerator;
             _mapper = mapper;
-            _restaurantService = restaurantService;
+            //_restaurantService = restaurantService;
+            _restaurantRepository = restaurantRepository;
             _staffAssignmentRepository = staffAssignmentRepository;
         }
 
@@ -43,7 +54,9 @@ namespace Application.Services
 
             var authToken = _jwtTokenGenerator.GenerateAuthenticationToken(user, globalRoles);
 
-            var availableRestaurants = await _restaurantService.GetByUserIdAsync(user.Id);
+            //var availableRestaurants = await _restaurantService.GetByUserIdAsync(user.Id);
+            var avaailableRestaurantsEntities = await _restaurantRepository.FindByUserIdAsync(user.Id);
+            var availableRestaurants = _mapper.Map<IEnumerable<RestaurantSummaryDto>>(avaailableRestaurantsEntities);
 
             return new AuthenticationResultDto
             {
@@ -61,7 +74,7 @@ namespace Application.Services
                 throw new UnauthorizedAccessException("Użytkownik o podanym ID nie istnieje.");
             }
 
-            var assignment = await _staffAssignmentRepository.GetByUserIdAndRestaurantIdAsync(userId, restaurantId);
+            var assignment = await _staffAssignmentRepository.FindByUserIdAndRestaurantIdAsync(userId, restaurantId);
 
             if (assignment == null)
             {
@@ -103,7 +116,7 @@ namespace Application.Services
         //    return _jwtTokenGenerator.GenerateAuthenticationToken(user, globalRoles);
         //}
 
-        public async Task<UserDto?> GetUserByIdAsync(string userId)
+        public async Task<UserDto?> GetByIdAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
 
@@ -115,6 +128,16 @@ namespace Application.Services
             var users = _userManager.Users.ToList();
 
             return _mapper.Map<IEnumerable<UserDto>>(users);
+        }
+
+        public async Task<User> FindByEmailOrThrowAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                throw new NotFoundException("User", email);
+
+            return user;
         }
 
         public async Task<IdentityResult> ChangePasswordAsync(string userId, ChangePasswordDto dto)
@@ -156,6 +179,15 @@ namespace Application.Services
             {
                 await _userManager.DeleteAsync(user);
             }
+        }
+
+        public async Task<User> FindByIdOrThrowAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new NotFoundException("User", userId);
+
+            return user;
         }
     }
 }
