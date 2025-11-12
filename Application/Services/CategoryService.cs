@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Features.Categories.Dtos;
+using Application.Common.Exceptions;
+using Application.Features.Categories.Dtos.Commands;
+using Application.Features.Categories.Dtos.Queries;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
@@ -15,17 +17,30 @@ namespace Application.Services
     {
         private readonly ICategoryRepository _categoryRepository;
         private readonly IMapper _mapper;
+        private readonly IRestaurantRepository _restaurantRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoryService(ICategoryRepository categoryRepository, IMapper mapper)
+        public CategoryService(
+            ICategoryRepository categoryRepository, 
+            IMapper mapper,
+            IRestaurantRepository restaurantRepository,
+            IUnitOfWork unitOfWork
+            )
         {
             _categoryRepository = categoryRepository;
             _mapper = mapper;
+            _restaurantRepository = restaurantRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<CategoryDto>> GetAllAsync()
+        public async Task<IEnumerable<CategorySummaryDto>> GetAllByRestaurantIdAsync(int restaurantId)
         {
-            var categories = await _categoryRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<CategoryDto>>(categories);
+            var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
+            if (restaurant == null)
+                throw new NotFoundException($"Restaurant with ID {restaurantId} not found.");
+
+            var categories = await _categoryRepository.GetAllByRestaurantIdAsync(restaurantId);
+            return _mapper.Map<IEnumerable<CategorySummaryDto>>(categories);
         }
 
         public async Task<CategoryDto?> GetByIdAsync(int id)
@@ -33,28 +48,63 @@ namespace Application.Services
             var category = await _categoryRepository.GetByIdAsync(id);
             return category != null ? _mapper.Map<CategoryDto>(category) : null;
         }
-        public async Task<CategoryDto> AddAsync(CreateCategoryDto newCategory)
+
+        public async Task AddAsync(CreateCategoryDto dto, int restaurantId)
         {
-            var category = _mapper.Map<Category>(newCategory);
-            var createdCategory = await _categoryRepository.AddAsync(category);
-            return _mapper.Map<CategoryDto>(createdCategory);
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
+                if (restaurant == null)
+                    throw new NotFoundException($"Restaurant with ID {restaurantId} not found.");
+
+                var existingCategory = await _categoryRepository.GetByNameAsync(dto.Name, restaurantId);
+                if (existingCategory != null)
+                    throw new BadRequestException($"Category with name '{dto.Name}' already exists in this restaurant.");
+
+                var newCategory = Category.Create(dto.Name, restaurantId);
+
+                _categoryRepository.Add(newCategory);
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
-        public async Task UpdateAsync(int id, UpdateCategoryDto updatedCategory)
+        public async Task UpdateAsync(UpdateCategoryDto dto, int resturantId)
         {
-            var categoryToUpdate = await _categoryRepository.GetByIdAsync(id);
-            if (categoryToUpdate == null)
-            {
-                throw new KeyNotFoundException($"Category with ID {id} not found.");
-            }
-            _mapper.Map(updatedCategory, categoryToUpdate);
+            await _unitOfWork.BeginTransactionAsync();
 
-            await _categoryRepository.UpdateAsync(categoryToUpdate);
+            try
+            {
+                var restaurant = await _restaurantRepository.GetByIdAsync(resturantId);
+                if (restaurant == null)
+                    throw new NotFoundException($"Restaurant with ID {resturantId} not found.");
+
+                var categoryToUpdate = await _categoryRepository.GetByNameAsync(dto.OldName, resturantId);
+                if (categoryToUpdate == null)
+                    throw new NotFoundException($"Category with ID {dto.OldName} not found.");
+
+                categoryToUpdate.Name = dto.NewName;
+
+               _categoryRepository.Update(categoryToUpdate);
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         public async Task DeleteAsync(int id)
         {
-            await _categoryRepository.DeleteAsync(id);
+            //await _categoryRepository.DeleteAsync(id);
+            throw new NotImplementedException();
         }
     }
 }

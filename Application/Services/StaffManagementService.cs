@@ -17,21 +17,18 @@ namespace Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IUserService _userService;
-        //private readonly IRestaurantService _restaurantService;
         private readonly IRestaurantRepository _restaurantRepository;
         private readonly IStaffAssignmentRepository _staffAssignmentRepository;
         private readonly RoleManager<IdentityRole> _roleManager;
 
         public StaffManagementService(
             IUnitOfWork unitOfWork,
-            //IRestaurantService restaurantService,
             IRestaurantRepository restaurantRepository,
             IUserService userService,
             IStaffAssignmentRepository staffAssignmentRepository,
             RoleManager<IdentityRole> roleManager)
         {
             _unitOfWork = unitOfWork;
-            //_restaurantService = restaurantService;
             _restaurantRepository = restaurantRepository;
             _userService = userService;
             _staffAssignmentRepository = staffAssignmentRepository;
@@ -43,7 +40,6 @@ namespace Application.Services
             try
             {
                 var userToAdd = await _userService.FindByEmailOrThrowAsync(dto.Email);
-                //var restaurant = await _restaurantService.FindByIdOrThrowAsync(restaurantId);
                 var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
                 if (restaurant == null)
                     throw new NotFoundException("Restauracja", restaurantId);
@@ -85,10 +81,12 @@ namespace Application.Services
             try
             {
                 var userToRemove = await _userService.FindByEmailOrThrowAsync(dto.Email);
-                //var restaurant = await _restaurantService.FindByIdOrThrowAsync(restaurantId);
                 var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
 
                 var existingAssignment = await FindAssignmentOrThrowAsync(userToRemove.Id, restaurant.Id);
+
+                if(existingAssignment.Role.Name == "RestaurantAdmin")
+                        throw new BadRequestException("Nie można usunąć administratora restauracji.");
 
                 _staffAssignmentRepository.Remove(existingAssignment);
                 await _unitOfWork.CommitTransactionAsync();
@@ -106,7 +104,6 @@ namespace Application.Services
             try
             {
                 var userToChange = await _userService.FindByEmailOrThrowAsync(dto.Email);
-                //var restaurant = await _restaurantService.FindByIdOrThrowAsync(restaurantId);
                 var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
 
                 var newRole = await _roleManager.FindByNameAsync(dto.NewRole);
@@ -114,6 +111,14 @@ namespace Application.Services
                     throw new BadRequestException($"Rola '{dto.NewRole}' nie została znaleziona.");
 
                 var existingAssignment = await FindAssignmentOrThrowAsync(userToChange.Id, restaurant.Id);
+
+                if(existingAssignment.Role.Name == "RestaurantAdmin")
+                {
+                    int adminCount = await _restaurantRepository.CountByIdAndRoleNameAsync(restaurant.Id, "RestaurantAdmin");
+                    if (adminCount <= 1)
+                        throw new BadRequestException("Nie można zmienić roli ostatniego administratora restauracji.");
+                }
+
 
                 _staffAssignmentRepository.Remove(existingAssignment);
                 var updatedAssignment = StaffAssignment.Create(userToChange, restaurant, newRole);

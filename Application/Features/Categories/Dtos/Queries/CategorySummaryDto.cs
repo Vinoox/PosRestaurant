@@ -6,14 +6,15 @@ using System.Threading.Tasks;
 using Application.Common.Mappings;
 using Domain.Entities;
 
-namespace Application.Features.Categories.Dtos
+namespace Application.Features.Categories.Dtos.Queries
 {
-    public class CreateCategoryDto : IMap
+    public class CategorySummaryDto : IMap
     {
         public string Name { get; set; }
+
         public void Mapping(AutoMapper.Profile profile)
         {
-            profile.CreateMap<CreateCategoryDto, Category>();
+            profile.CreateMap<Category, CategorySummaryDto>();
         }
     }
 }

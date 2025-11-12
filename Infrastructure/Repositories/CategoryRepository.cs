@@ -19,9 +19,12 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Category>> GetAllAsync()
+        public async Task<IEnumerable<Category>> GetAllByRestaurantIdAsync(int restaurantId)
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories
+                .Where(c => c.RestaurantId == restaurantId)
+                .ToListAsync();
+            //return await _context.Categories.ToListAsync();
         }
 
         public async Task<Category?> GetByIdAsync(int id)
@@ -29,15 +32,18 @@ namespace Infrastructure.Repositories
             return await _context.Categories.FindAsync(id);
         }
 
-        public async Task<Category?> GetByNameAsync(string name)
+        public async Task<Category?> GetByNameAsync(string name, int restaurantId)
         {
-            return await _context.Categories.SingleOrDefaultAsync(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            var normalizedName = name.ToLower();
+            
+            return await _context.Categories
+                .Where(c => c.RestaurantId == restaurantId)
+                .FirstOrDefaultAsync(c => c.Name.ToLower() == normalizedName);
         }
-        public async Task<Category> AddAsync(Category category)
+
+        public void Add(Category category)
         {
-            await _context.Categories.AddAsync(category);
-            await _context.SaveChangesAsync();
-            return category;
+            _context.Categories.Add(category);
         }
 
         public async Task DeleteAsync(int id)
@@ -50,10 +56,9 @@ namespace Infrastructure.Repositories
             }
         }
 
-        public async Task UpdateAsync(Category category)
+        public void Update(Category category)
         {
             _context.Categories.Update(category);
-            await _context.SaveChangesAsync();
         }
     }
 }

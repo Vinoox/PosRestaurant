@@ -37,5 +37,12 @@ namespace Infrastructure.Repositories
                 .Select(sa => sa.Restaurant)
                 .ToListAsync();
         }
+
+        public async Task<int> CountByIdAndRoleNameAsync(int id, string roleName)
+        {
+            return await _context.Restaurants
+                .Where(r => r.Id == id && r.StaffAssignments.Any(sa => sa.Role.Name == roleName))
+                .CountAsync();
+        }
     }
 }
