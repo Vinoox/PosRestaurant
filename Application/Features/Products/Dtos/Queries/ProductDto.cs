@@ -7,7 +7,7 @@ using Application.Common.Mappings;
 using AutoMapper;
 using Domain.Entities;
 
-namespace Application.Features.Products.Dtos
+namespace Application.Features.Products.Dtos.Queries
 {
     public class ProductDto : IMap
     {

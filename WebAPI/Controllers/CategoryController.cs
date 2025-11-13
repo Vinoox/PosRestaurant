@@ -12,10 +12,12 @@ namespace WebAPI.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
+        private readonly IProductService _productService;
 
-        public CategoryController(ICategoryService categoryService)
+        public CategoryController(ICategoryService categoryService, IProductService productService)
         {
             _categoryService = categoryService;
+            _productService = productService;
         }
 
         [HttpGet]
@@ -41,6 +43,14 @@ namespace WebAPI.Controllers
         {
             await _categoryService.UpdateAsync(dto, restaurantId);
             return NoContent();
+        }
+
+        [HttpGet("{categoryId}/products")]
+        [SwaggerOperation(Summary = "Get all products from a specific resturant and category")]
+        public async Task<IActionResult> GetAllProductsFromCategory([FromRoute] int restaurantId, [FromRoute] int categoryId)
+        {
+            var products = await _productService.GetAllByCategoryIdAsync(restaurantId, categoryId);
+            return Ok(products);
         }
 
 

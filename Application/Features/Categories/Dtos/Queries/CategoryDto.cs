@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Common.Mappings;
-using Application.Features.Products.Dtos;
+using Application.Features.Products.Dtos.Queries;
 using AutoMapper;
 using Domain.Entities;
 

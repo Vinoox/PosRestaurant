@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.Features.Products.Dtos.Commands;
 using Application.Features.Products.Validators;
 using FluentValidation;
 
@@ -28,8 +29,6 @@ namespace Application.Features.Products.Dtos.Validators
                 .NotEmpty().WithMessage("ID kategorii jest wymagane.")
                 .GreaterThan(0).WithMessage("ID kategorii musi być poprawną liczbą.");
 
-            RuleForEach(dto => dto.Ingredients)
-            .SetValidator(new IngredientAmountDtoValidator());
         }
     }
 }

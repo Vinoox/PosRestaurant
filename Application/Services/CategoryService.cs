@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Common.Exceptions;
 using Application.Features.Categories.Dtos.Commands;
 using Application.Features.Categories.Dtos.Queries;
+using Application.Features.Products.Dtos.Commands;
+using Application.Features.Products.Dtos.Queries;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
@@ -19,25 +22,29 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly IRestaurantRepository _restaurantRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IProductRepository _productRepository;
+        private readonly IRestaurantService _restaurantService;
 
         public CategoryService(
             ICategoryRepository categoryRepository, 
             IMapper mapper,
             IRestaurantRepository restaurantRepository,
-            IUnitOfWork unitOfWork
+            IUnitOfWork unitOfWork,
+            IProductRepository productRepository,
+            IRestaurantService restaurantService
             )
         {
             _categoryRepository = categoryRepository;
             _mapper = mapper;
             _restaurantRepository = restaurantRepository;
             _unitOfWork = unitOfWork;
+            _productRepository = productRepository;
+            _restaurantService = restaurantService;
         }
 
         public async Task<IEnumerable<CategorySummaryDto>> GetAllByRestaurantIdAsync(int restaurantId)
         {
-            var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
-            if (restaurant == null)
-                throw new NotFoundException($"Restaurant with ID {restaurantId} not found.");
+            var restaurant = await _restaurantService.FindByIdOrThrowAsync(restaurantId);
 
             var categories = await _categoryRepository.GetAllByRestaurantIdAsync(restaurantId);
             return _mapper.Map<IEnumerable<CategorySummaryDto>>(categories);
@@ -49,15 +56,21 @@ namespace Application.Services
             return category != null ? _mapper.Map<CategoryDto>(category) : null;
         }
 
+        public async Task<Category> FindByIdOrThrowAsync(int id)
+        {
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null)
+                throw new NotFoundException("Category", id);
+
+            return category;
+        }
         public async Task AddAsync(CreateCategoryDto dto, int restaurantId)
         {
             await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
-                if (restaurant == null)
-                    throw new NotFoundException($"Restaurant with ID {restaurantId} not found.");
+                var restaurant = await _restaurantService.FindByIdOrThrowAsync(restaurantId);
 
                 var existingCategory = await _categoryRepository.GetByNameAsync(dto.Name, restaurantId);
                 if (existingCategory != null)
@@ -81,9 +94,7 @@ namespace Application.Services
 
             try
             {
-                var restaurant = await _restaurantRepository.GetByIdAsync(resturantId);
-                if (restaurant == null)
-                    throw new NotFoundException($"Restaurant with ID {resturantId} not found.");
+                var restaurant = await _restaurantService.FindByIdOrThrowAsync(resturantId);
 
                 var categoryToUpdate = await _categoryRepository.GetByNameAsync(dto.OldName, resturantId);
                 if (categoryToUpdate == null)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Application.Common.Mappings;
 using Application.Features.Categories.Dtos.Queries;
 using Application.Features.Ingredients.Dtos;
-using Application.Features.Products.Dtos;
+using Application.Features.Products.Dtos.Queries;
 using Application.Features.Users.Dtos.Queries;
 using AutoMapper;
 using Domain.Entities;

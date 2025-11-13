@@ -9,7 +9,7 @@ namespace Domain.Entities
 {
     public class Product : AuditableEntity
     {
-        public string Name { get; private set; } = null!;
+        public string Name { get; private set; }
 
         public string? Description { get; private set; }
 
@@ -21,7 +21,6 @@ namespace Domain.Entities
         private readonly List<ProductIngredient> _productIngredients = [];
         public IReadOnlyCollection<ProductIngredient> ProductIngredients => _productIngredients.AsReadOnly();
 
-
         public int RestaurantId { get; private set; }
         public Restaurant Restaurant { get; private set; } = null!;
 
@@ -29,14 +28,14 @@ namespace Domain.Entities
         {
         }
 
-        public static Product Create(string name, string description, decimal price, int categoryId)
+        public static Product Create(string name, string description, decimal price, int categoryId, int restaurantId)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentException("Product name cannot be empty.", nameof(name));
             }
 
-            if (price <= 0)
+            if (price < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(price), "Product price must be greater than zero.");
             }
@@ -51,7 +50,8 @@ namespace Domain.Entities
                 Name = name,
                 Description = description,
                 Price = price,
-                CategoryId = categoryId
+                CategoryId = categoryId,
+                RestaurantId = restaurantId
             };
         }
 

@@ -1,4 +1,4 @@
-﻿using Application.Features.Products.Dtos;
+﻿using Application.Features.Products.Dtos.Commands;
 using FluentValidation;
 
 namespace Application.Features.Products.Validators
