@@ -7,16 +7,16 @@ using Application.Common.Mappings;
 using Domain.Entities;
 using Domain.Enums;
 
-namespace Application.Features.Ingredients.Dtos
+namespace Application.Features.Ingredients.Dtos.Queries
 {
-    public class CreateIngredientDto : IMap
+    public class IngredientDto : IMap
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public Unit Unit { get; set; }
-
         public void Mapping(AutoMapper.Profile profile)
         {
-            profile.CreateMap<CreateIngredientDto, Ingredient>();
+            profile.CreateMap<Ingredient, IngredientDto>();
         }
     }
 }

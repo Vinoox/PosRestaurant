@@ -7,13 +7,12 @@ using Domain.Common;
 
 namespace Domain.Entities
 {
-    public class Category : AuditableEntity
+    public class Category : AuditableEntity, ITenantEntity
     {
-        public required string Name { get; set; }
-
+        public string Name { get; private set; } = null!;
         public int RestaurantId { get; set; }
-        public Restaurant Restaurant { get; set; }
-        public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+        public Restaurant Restaurant { get; private set; } = null!;
+        public ICollection<Product> Products { get; private set; } = new List<Product>();
 
         private Category() 
         {
@@ -29,6 +28,14 @@ namespace Domain.Entities
                 Name = name.Trim(),
                 RestaurantId = restaurantId
             };
+        }
+
+        public void UpdateName(string newName)
+        {
+            if (!string.IsNullOrWhiteSpace(newName))
+                throw new ArgumentException("Nazwa kategorii nie może być pusta.", nameof(newName));
+
+            Name = newName;
         }
     }
 }

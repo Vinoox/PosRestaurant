@@ -24,15 +24,15 @@ namespace Infrastructure.Repositories
             return await _context.Categories
                 .Where(c => c.RestaurantId == restaurantId)
                 .ToListAsync();
-            //return await _context.Categories.ToListAsync();
         }
 
-        public async Task<Category?> GetByIdAsync(int id)
+        public async Task<Category?> GetByIdAsync(int restaurantId, int id)
         {
-            return await _context.Categories.FindAsync(id);
+            return await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == id && c.RestaurantId == restaurantId);
         }
 
-        public async Task<Category?> GetByNameAsync(string name, int restaurantId)
+        public async Task<Category?> GetByNameAsync(int restaurantId, string name)
         {
             var normalizedName = name.ToLower();
             
@@ -46,14 +46,9 @@ namespace Infrastructure.Repositories
             _context.Categories.Add(category);
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(Category category)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category != null)
-            {
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
-            }
+            _context.Categories.Remove(category);
         }
 
         public void Update(Category category)

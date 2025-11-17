@@ -1,5 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text;
+using System.Text.Json.Serialization;
 using Application;
+using Application.Features.Users.Dtos.Commands;
 using Domain.Entities;
 using Domain.Interfaces;
 using FluentValidation;
@@ -7,13 +9,12 @@ using FluentValidation.AspNetCore;
 using Infrastructure;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
-using Microsoft.AspNetCore.Identity;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Application.Features.Users.Dtos.Commands;
-using WebAPI.Middleware;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using WebAPI.Middleware;
 
 namespace WebAPI.Installers
 {
@@ -59,6 +60,9 @@ namespace WebAPI.Installers
                 options.AddPolicy("IsRestaurantAdmin", policy =>
                 policy.RequireClaim("restaurant_role", "RestaurantAdmin"));
             });
+
+            services.AddHttpContextAccessor(); // Ważne!
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 
             services.AddApplication();

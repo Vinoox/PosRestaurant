@@ -12,11 +12,12 @@ namespace Application.Interfaces
     public interface ICategoryService
     {
         Task<IEnumerable<CategorySummaryDto>> GetAllByRestaurantIdAsync(int restaurantId);
-        Task<CategoryDto?> GetByIdAsync(int id);
+        Task<CategoryDto?> GetByIdAsync(int restaurantId, int id);
+        Task<int> CreateAsync(int restaurantId, CreateCategoryDto newCategory);
+        Task UpdateAsync(int restaurantId, int id, UpdateCategoryDto updatedCategory);
+        Task DeleteAsync(int restaurantId, int id);
 
-        Task<Category> FindByIdOrThrowAsync(int id);
-        Task AddAsync(CreateCategoryDto newCategory, int restaurantId);
-        Task UpdateAsync(UpdateCategoryDto updatedCategory, int restaurantId);
-        Task DeleteAsync(int id);
+
+        Task<Category> FindByIdOrThrowAsync(int restaurantId, int id);
     }
 }

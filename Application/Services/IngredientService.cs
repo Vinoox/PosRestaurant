@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Features.Ingredients.Dtos;
+using Application.Common.Exceptions;
+using Application.Features.Ingredients.Dtos.Command;
+using Application.Features.Ingredients.Dtos.Queries;
 using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
@@ -15,48 +17,91 @@ namespace Application.Services
     {
         private readonly IIngredientRepository _ingredientRepository;
         private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public IngredientService(IIngredientRepository ingredientRepository, IMapper mapper)
+        public IngredientService(
+            IIngredientRepository ingredientRepository,
+            IMapper mapper,
+            IUnitOfWork unitOfWork)
         {
             _ingredientRepository = ingredientRepository;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
 
-        public async Task<IEnumerable<IngredientDto>> GetAllAsync()
+        public async Task<IEnumerable<IngredientDto>> GetAllAsync(int restaurantId)
         {
-            var ingredients = await _ingredientRepository.GetAllAsync();
+            var ingredients = await _ingredientRepository.GetAllAsync(restaurantId);
             return _mapper.Map<IEnumerable<IngredientDto>>(ingredients);
         }
 
-        public async Task<IngredientDto?> GetByNameAsync(string name)
+        public async Task<IngredientDto?> GetByIdAsync(int restaurantId, int id)
         {
-            var ingredient = await _ingredientRepository.GetByNameAsync(name);
-            return ingredient != null ? _mapper.Map<IngredientDto?>(ingredient) : null;
+            var ingredient = await _ingredientRepository.GetByIdAsync(restaurantId, id);
+
+            return _mapper.Map<IngredientDto>(ingredient);
         }
 
-        public async Task<IngredientDto> CreateAsync(CreateIngredientDto newIngredient)
+        public async Task<IngredientDto?> GetByNameAsync(int restaurantId, string name)
         {
-            var ingredient = _mapper.Map<Ingredient>(newIngredient);
-            var createdIngredient = await _ingredientRepository.AddAsync(ingredient);
-            return _mapper.Map<IngredientDto>(createdIngredient);
+            var ingredient = await _ingredientRepository.GetByNameAsync(restaurantId, name);
+            return _mapper.Map<IngredientDto?>(ingredient);
         }
 
-        public async Task UpdateAsync(int id, UpdateIngredientDto updatedIngredient)
+        public async Task<int> CreateAsync(int restaurantId, CreateIngredientDto dto)
         {
-            var IngredientToUpdate = await _ingredientRepository.GetByIdAsync(id);
-
-            if (IngredientToUpdate == null)
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                throw new KeyNotFoundException($"Ingredient with ID {id} not found.");
-            }
+                var existingIngredient = await _ingredientRepository.GetByNameAsync(restaurantId, dto.Name);
+                if (existingIngredient != null)
+                    throw new BadRequestException($"Ingredient with name '{dto.Name}' already exists in this restaurant.");
 
-            _mapper.Map(updatedIngredient, IngredientToUpdate);
-            await _ingredientRepository.UpdateAsync(IngredientToUpdate);
+
+                var ingredient = Ingredient.Create(dto.Name, dto.Unit, restaurantId);
+                _ingredientRepository.Add(ingredient);
+                
+                await _unitOfWork.CommitTransactionAsync();
+                return ingredient.Id;
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw; 
+            }
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task DeleteAsync(int restaurantId, int id)
         {
-            await _ingredientRepository.DeleteAsync(id);
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                var ingredientToDelete = await FindByIdOrThrowAsync(restaurantId, id);
+                _ingredientRepository.Delete(ingredientToDelete);
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+
+        public async Task UpdateAsync(int restaurantId, int id, UpdateIngredientDto dto)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public async Task<Ingredient> FindByIdOrThrowAsync(int restaurntId, int id)
+        {
+            var ingredient = await _ingredientRepository.GetByIdAsync(restaurntId, id);
+            if (ingredient == null)
+                throw new NotFoundException("Ingredient", id);
+
+            return ingredient;
         }
     }
 }

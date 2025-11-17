@@ -4,13 +4,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
+using Domain.Interfaces;
+using System.Security;
 
 namespace Infrastructure.Data
 {
     public class PosRestaurantContext : IdentityDbContext<User>
     {
-        public PosRestaurantContext(DbContextOptions<PosRestaurantContext> options) : base(options)
+        private readonly ICurrentUserService _currentUserService;
+
+        public PosRestaurantContext(DbContextOptions<PosRestaurantContext> options, ICurrentUserService currentUserService) : base(options)
         {
+            _currentUserService = currentUserService;
         }
         
         public DbSet<Restaurant> Restaurants { get; set; }
@@ -63,30 +68,10 @@ namespace Infrastructure.Data
                 entity.HasOne(pi => pi.Ingredient)
                       .WithMany()
                       .HasForeignKey(pi => pi.IngredientId);
+                entity.Property(pi => pi.Unit)
+                    .HasConversion<string>();
+                entity.Property(pi => pi.Amount).HasPrecision(18, 4);
             });
-
-
-            //modelBuilder.Entity<User>(entity =>
-            //{
-            //    entity.HasMany(u => u.Restaurants)
-            //          .WithMany(r => r.Staff)
-            //          .UsingEntity<StaffAssignment>(
-            //              j => j
-            //                  .HasOne(sa => sa.Restaurant)
-            //                  .WithMany()
-            //                  .HasForeignKey(sa => sa.RestaurantId),
-            //              j => j
-            //                  .HasOne(sa => sa.User)
-            //                  .WithMany()
-            //                  .HasForeignKey(sa => sa.UserId),
-            //              j =>
-            //              {
-            //                  j.HasKey(sa => new { sa.UserId, sa.RestaurantId, sa.RoleId });
-            //                  j.HasOne(sa => sa.Role)
-            //                  .WithMany()
-            //                  .HasForeignKey(sa => sa.RoleId);
-            //              });
-            //});
 
             modelBuilder.Entity<StaffAssignment>(entity =>
             {
@@ -106,25 +91,23 @@ namespace Infrastructure.Data
 
         // --- ZMIANA: PRZEBUDOWANA LOGIKA ZAPISYWANIA ZMIAN ---
 
-        /// <summary>
-        /// Przesłonięcie standardowej metody SaveChangesAsync.
-        /// Najpierw uruchamia naszą logikę audytową, a następnie wywołuje bazową implementację.
-        /// </summary>
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            SetAuditProperties();
+            ApplyCustomLogicBeforeSaving();
             return base.SaveChangesAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Przesłonięcie DRUGIEJ, bardziej złożonej wersji SaveChangesAsync.
-        /// Robimy to, aby mieć pewność, że nasza logika audytowa zadziała ZAWSZE,
-        /// niezależnie od tego, jakiej wersji metody użyje framework (np. UserManager).
-        /// </summary>
         public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
         {
-            SetAuditProperties();
+            ApplyCustomLogicBeforeSaving();
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        // --- Metoda pomocnicza, która wywołuje inne, wyspecjalizowane metody ---
+        private void ApplyCustomLogicBeforeSaving()
+        {
+            SetAuditProperties();
+            ValidateTenantSecurity();
         }
 
         /// <summary>
@@ -139,10 +122,39 @@ namespace Infrastructure.Data
                 {
                     case EntityState.Added:
                         entry.Entity.CreatedAt = DateTime.UtcNow;
+                        entry.Entity.CreatedBy = _currentUserService.UserId;
                         break;
 
                     case EntityState.Modified:
                         entry.Entity.LastModified = DateTime.UtcNow;
+                        entry.Entity.LastModifiedBy = _currentUserService.UserId;
+                        break;
+                }
+            }
+        }
+
+        private void ValidateTenantSecurity()
+        {
+            var restaurantId = _currentUserService.RestaurantId;
+            if (restaurantId == null) return; // Zezwól na operacje bez kontekstu (np. seedowanie, SuperAdmin)
+
+            foreach (var entry in ChangeTracker.Entries<ITenantEntity>()) // Używamy interfejsu ITenantEntity
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        // Automatycznie przypisz nową encję do restauracji zalogowanego użytkownika.
+                        entry.Entity.RestaurantId = restaurantId.Value;
+                        break;
+
+                    case EntityState.Modified:
+                    case EntityState.Deleted:
+                        // KRYTYCZNE ZABEZPIECZENIE: Sprawdź, czy użytkownik nie próbuje
+                        // modyfikować lub usuwać danych z innej restauracji.
+                        if (entry.Entity.RestaurantId != restaurantId.Value)
+                        {
+                            throw new SecurityException("Próba modyfikacji danych należących do innej restauracji.");
+                        }
                         break;
                 }
             }

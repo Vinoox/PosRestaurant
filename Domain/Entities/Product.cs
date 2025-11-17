@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.Common;
+using Domain.Enums;
 
 namespace Domain.Entities
 {
-    public class Product : AuditableEntity
+    public class Product : AuditableEntity, ITenantEntity
     {
         public string Name { get; private set; }
 
@@ -18,10 +19,9 @@ namespace Domain.Entities
         public int CategoryId { get; private set; }
         public virtual Category Category { get; private set; } = null!;
 
-        private readonly List<ProductIngredient> _productIngredients = [];
+        private readonly List<ProductIngredient> _productIngredients = new();
         public IReadOnlyCollection<ProductIngredient> ProductIngredients => _productIngredients.AsReadOnly();
-
-        public int RestaurantId { get; private set; }
+        public int RestaurantId { get; set; }
         public Restaurant Restaurant { get; private set; } = null!;
 
         private Product()
@@ -55,55 +55,50 @@ namespace Domain.Entities
             };
         }
 
-        public void Update(ProductUpdateParams parameters)
+        //public void Update(ProductUpdateParams parameters)
+        //{
+        //    if (!string.IsNullOrWhiteSpace(parameters.Name))
+        //        Name = parameters.Name;
+
+        //    Description = parameters.Description ?? Description;
+
+        //    if (parameters.Price.HasValue)
+        //        UpdatePrice(parameters.Price.Value);
+
+        //    if (parameters.CategoryId.HasValue)
+        //        ChangeCategory(parameters.CategoryId.Value);
+        //}
+
+        //public void UpdatePrice(decimal newPrice)
+        //{
+        //    if (newPrice <= 0)
+        //        throw new ArgumentOutOfRangeException(nameof(newPrice), "Product price must be greater than zero.");
+
+        //    Price = newPrice;
+        //}
+
+        //public void ChangeCategory(int newCategoryId)
+        //{
+        //    if (newCategoryId <= 0)
+        //    {
+        //        throw new ArgumentOutOfRangeException(nameof(newCategoryId), "Category ID must be greater than zero.");
+        //    }
+        //    CategoryId = newCategoryId;
+        //}
+
+        public ProductIngredient AddIngredient(Ingredient ingredient, decimal amount, Unit unit)
         {
-            if (!string.IsNullOrWhiteSpace(parameters.Name))
-                Name = parameters.Name;
+            if (_productIngredients.Any(pi => pi.IngredientId == ingredient.Id))
+                throw new DomainException($"Składnik '{ingredient.Name}' jest już dodany do tego produktu.");
 
-            Description = parameters.Description ?? Description;
+            if (amount <= 0)
+                throw new DomainException("Ilość składnika musi być dodatnia.");
 
-            if (parameters.Price.HasValue)
-                UpdatePrice(parameters.Price.Value);
+            var newProductIngredient = new ProductIngredient(this.Id, ingredient.Id, amount, unit);
 
-            if (parameters.CategoryId.HasValue)
-                ChangeCategory(parameters.CategoryId.Value);
-        }
+            _productIngredients.Add(newProductIngredient);
 
-        public void UpdatePrice(decimal newPrice)
-        {
-            if (newPrice <= 0)
-                throw new ArgumentOutOfRangeException(nameof(newPrice), "Product price must be greater than zero.");
-
-            Price = newPrice;
-        }
-
-        public void ChangeCategory(int newCategoryId)
-        {
-            if (newCategoryId <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(newCategoryId), "Category ID must be greater than zero.");
-            }
-            CategoryId = newCategoryId;
-        }
-
-        public void AddIngredient(int ingredientId, int quantity)
-        {
-            if (ingredientId <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(ingredientId), "Ingredient ID must be greater than zero.");
-            }
-            if (quantity <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be greater than zero.");
-            }
-
-            if (_productIngredients.Any(pi => pi.IngredientId == ingredientId))
-            {
-                throw new InvalidOperationException("Ingredient already exists in the product.");
-            }
-
-            var ingredient = new ProductIngredient {IngredientId = ingredientId, Quantity = quantity};
-            _productIngredients.Add(ingredient);
+            return newProductIngredient;
         }
 
         public void RemoveIngredient(int ingredientId)
@@ -122,29 +117,30 @@ namespace Domain.Entities
             _productIngredients.Clear();
         }
 
-        public void UpdateIngredientQuantity(int ingredientId, int newQuantity)
+        //    public void UpdateIngredientQuantity(int ingredientId, int newQuantity)
+        //    {
+        //        if (newQuantity <= 0)
+        //        {
+        //            throw new ArgumentOutOfRangeException(nameof(newQuantity), "Quantity must be greater than zero.");
+        //        }
+
+        //        if (ingredientId <= 0)
+        //        {
+        //            throw new ArgumentOutOfRangeException(nameof(ingredientId), "Ingredient ID must be greater than zero.");
+        //        }
+
+        //        var ingredient = _productIngredients.FirstOrDefault(pi => pi.IngredientId == ingredientId) ?? throw new InvalidOperationException("Ingredient not found in the product.");
+        //        ingredient.Amount = newQuantity;
+        //    }
+        //}
+
+
+        public class ProductUpdateParams
         {
-            if (newQuantity <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(newQuantity), "Quantity must be greater than zero.");
-            }
-
-            if (ingredientId <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(ingredientId), "Ingredient ID must be greater than zero.");
-            }
-
-            var ingredient = _productIngredients.FirstOrDefault(pi => pi.IngredientId == ingredientId) ?? throw new InvalidOperationException("Ingredient not found in the product.");
-            ingredient.Quantity = newQuantity;
+            public string Name { get; set; }
+            public string Description { get; set; }
+            public decimal Price { get; set; }
+            public int CategoryId { get; set; }
         }
-    }
-
-
-    public class ProductUpdateParams
-    {
-        public string? Name { get; set; }
-        public string? Description { get; set; }
-        public decimal? Price { get; set; }
-        public int? CategoryId { get; set; }
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.Common.Mappings;
 using Application.Features.Categories.Dtos.Queries;
-using Application.Features.Ingredients.Dtos;
+using Application.Features.Ingredients.Dtos.Queries;
 using Application.Features.Products.Dtos.Queries;
 using Application.Features.Users.Dtos.Queries;
 using AutoMapper;

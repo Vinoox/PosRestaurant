@@ -19,9 +19,6 @@ namespace Application.Services
     public class RestaurantService : IRestaurantService
     {
         private readonly IRestaurantRepository _restaurantRepository;
-        private readonly IProductRepository _productRepository;
-        private readonly IIngredientRepository _ingredientRepository;
-        private readonly ICategoryRepository _categoryRepository;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IMapper _mapper;
@@ -34,9 +31,6 @@ namespace Application.Services
         public RestaurantService(
             IStaffManagementService staffManagementService,
             IRestaurantRepository restaurantRepository,
-            IProductRepository productRepository,
-            IIngredientRepository ingredientRepository,
-            ICategoryRepository categoryRepository,
             UserManager<User> userManager,
             RoleManager<IdentityRole> roleManager,
             IMapper mapper,
@@ -46,9 +40,6 @@ namespace Application.Services
         {
             _staffManagementService = staffManagementService;
             _restaurantRepository = restaurantRepository;
-            _productRepository = productRepository;
-            _ingredientRepository = ingredientRepository;
-            _categoryRepository = categoryRepository;
             _userManager = userManager;
             _roleManager = roleManager;
             _mapper = mapper;
@@ -66,8 +57,7 @@ namespace Application.Services
                 var creatorUser = await _userService.FindByIdOrThrowAsync(creatorUserId);
                 var restaurant = Restaurant.Create(dto.Name);
 
-                await _restaurantRepository.CreateAsync(restaurant);
-
+                _restaurantRepository.CreateAsync(restaurant);
                 await _staffManagementService.AddInitialMemberAsync(restaurant, creatorUser);
                 await _unitOfWork.CommitTransactionAsync();
                 return restaurant.Id;
@@ -101,36 +91,5 @@ namespace Application.Services
             var restaurants = await _restaurantRepository.FindByUserIdAsync(userId);
             return _mapper.Map<IEnumerable<RestaurantSummaryDto>>(restaurants);
         }
-
-        //public async Task ChangeStaffMemberRoleAsync(int restaurantId, ChangeStaffMemberRoleDto dto)
-        //{
-        //    await _unitOfWork.BeginTransactionAsync();
-        //    try
-        //    {
-        //        var userToUpdate = await _userManager.FindByEmailAsync(dto.Email);
-        //        if (userToUpdate == null)
-        //            throw new NotFoundException($"Użytkownik o emailu '{dto.Email}' nie został znaleziony.");
-
-        //        var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
-        //        if (restaurant == null)
-        //            throw new NotFoundException($"Restauracja o ID '{restaurantId}' nie została znaleziona.");
-
-        //        var newRole = await _roleManager.FindByNameAsync(dto.NewRole);
-        //        if (newRole == null)
-        //            throw new BadRequestException($"Rola '{dto.NewRole}' nie została znaleziona.");
-
-        //        var existingAssignment = await _staffAssignmentRepository.GetByUserIdAndRestaurantIdAsync(userToUpdate.Id, restaurant.Id);
-        //        if (existingAssignment == null)
-        //            throw new BadRequestException($"Użytkownik '{dto.Email}' nie jest przypisany do restauracji '{restaurant.Name}'.");
-
-        //        await _staffAssignmentRepository.ChangeRole(existingAssignment, newRole);
-        //        await _unitOfWork.CommitTransactionAsync();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        await _unitOfWork.RollbackTransactionAsync();
-        //        throw;
-        //    }
-        //}
     }
 }

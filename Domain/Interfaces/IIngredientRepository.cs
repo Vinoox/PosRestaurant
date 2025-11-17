@@ -9,12 +9,14 @@ namespace Domain.Interfaces
 {
     public interface IIngredientRepository
     {
-        Task<IEnumerable<Ingredient>> GetAllAsync();
-        Task<Ingredient?> GetByIdAsync(int id);
-        Task<Ingredient?> GetByNameAsync(string name);
-        Task<Ingredient> AddAsync(Ingredient ingredient);
-        Task UpdateAsync(Ingredient ingredient);
-        Task DeleteAsync(int id);
-        Task<int> CountExistingAsync(IEnumerable<int> ingredientIds);
+        Task<IEnumerable<Ingredient>> GetAllAsync(int restaurantId);
+        Task<IEnumerable<Ingredient>> GetAllByProductIdAsync(int restaurantId, int productId);
+        Task<Ingredient?> GetByIdAsync(int restaurantId, int id);
+        Task<Ingredient?> GetByNameAsync(int restuarantId, string name);
+        void Add(Ingredient ingredient);
+        void Delete(Ingredient ingredient);
+
+        //Task UpdateAsync(Ingredient ingredient);
+        //Task<int> CountExistingAsync(IEnumerable<int> ingredientIds);
     }
 }

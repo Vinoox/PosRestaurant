@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace WebAPI.Controllers
 {
-    [Route("api/{restaurantId}/categories")]
+    [Route("api/restaurants/{restaurantId}/categories")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -30,18 +30,26 @@ namespace WebAPI.Controllers
 
         [HttpPost]
         [SwaggerOperation(Summary = "Create a new category")]
-        public async Task<IActionResult> CreateCategory([FromRoute] int restaurantId, [FromBody]CreateCategoryDto dto)
+        public async Task<IActionResult> CreateCategory([FromRoute] int restaurantId, [FromBody] CreateCategoryDto dto)
         {
-            await _categoryService.AddAsync(dto, restaurantId);
+            await _categoryService.CreateAsync(restaurantId, dto);
 
             return Created();
         }
 
-        [HttpPatch]
+        [HttpPatch("{categoryId}")]
         [SwaggerOperation(Summary = "Update an existing category")]
-        public async Task<IActionResult> UpdateCategory([FromRoute] int restaurantId, [FromBody] UpdateCategoryDto dto)
+        public async Task<IActionResult> UpdateCategory([FromRoute] int restaurantId, [FromRoute] int categoryId,[FromBody] UpdateCategoryDto dto)
         {
-            await _categoryService.UpdateAsync(dto, restaurantId);
+            await _categoryService.UpdateAsync(restaurantId, categoryId ,dto);
+            return NoContent();
+        }
+
+        [HttpDelete("{categoryId}")]
+        [SwaggerOperation(Summary = "Delete specific category")]
+        public async Task<IActionResult> DeleteCategory([FromRoute] int restaurantId, [FromRoute] int id)
+        {
+            await _categoryService.DeleteAsync(restaurantId, id);
             return NoContent();
         }
 
@@ -53,42 +61,5 @@ namespace WebAPI.Controllers
             return Ok(products);
         }
 
-
-
-        //[SwaggerOperation(Summary = "Get category by id")]
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetCategoryById(int id)
-        //{
-        //    var category = await _categoryService.GetByIdAsync(id);
-        //    if (category == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(category);
-        //}
-
-        //[SwaggerOperation(Summary = "Get all categories")]
-        //[HttpGet]
-        //public async Task<IActionResult> GetAllCategories()
-        //{
-        //    var categories = await _categoryService.GetAllAsync();
-        //    return Ok(categories);
-        //}
-
-        //[SwaggerOperation(Summary = "Update an existing category")]
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDto updatedCategory)
-        //{
-        //    await _categoryService.UpdateAsync(id, updatedCategory);
-        //    return NoContent();
-        //}
-
-        //[SwaggerOperation(Summary = "Delete a category")]
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteCategory(int id)
-        //{
-        //    await _categoryService.DeleteAsync(id);
-        //    return NoContent();
-        //}
     }
 }

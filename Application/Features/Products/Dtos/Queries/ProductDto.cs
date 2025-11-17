@@ -21,18 +21,10 @@ namespace Application.Features.Products.Dtos.Queries
         public void Mapping(Profile profile)
         {
             profile.CreateMap<Product, ProductDto>()
-                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
-                .ForMember(
-                dest => dest.Ingredients,
-                opt => opt.MapFrom(src => src.ProductIngredients
-                .Select(pi => new ProductIngredientDto
-                {
-                    IngredientId = pi.IngredientId,
-                    Name = pi.Ingredient.Name,
-                    Quantity = pi.Quantity,
-                    Unit = pi.Ingredient.Unit.ToString(),
-                })
-                ));
+                .ForMember(dest => dest.CategoryName,
+                           opt => opt.MapFrom(src => src.Category.Name))
+                .ForMember(dest => dest.Ingredients,
+                           opt => opt.MapFrom(src => src.ProductIngredients));
         }
     }
 }

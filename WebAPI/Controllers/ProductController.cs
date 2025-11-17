@@ -29,11 +29,11 @@ namespace WebAPI.Controllers
             return Ok(products);
         }
 
-        [HttpGet("{productId}")]
+        [HttpGet("{id}")]
         [SwaggerOperation(Summary = "Get product by id")]
-        public async Task<IActionResult> GetProductById([FromRoute] int restaurantId, [FromRoute] int productId)
+        public async Task<IActionResult> GetProductById([FromRoute] int restaurantId, [FromRoute] int id)
         {
-            var product = await _productService.GetByIdAsync(restaurantId, productId);
+            var product = await _productService.GetByIdAsync(restaurantId, id);
             return Ok(product);
         }
 
@@ -43,92 +43,28 @@ namespace WebAPI.Controllers
         {
             var newProductId = await _productService.CreateAsync(restaurantId, dto);
 
-            return CreatedAtAction(nameof(GetProductById), new { restaurantId = restaurantId, productId = newProductId }, new { id = newProductId });
+            return CreatedAtAction(nameof(GetProductById), new { restaurantId = restaurantId, id = newProductId }, new { id = newProductId });
         }
 
         [HttpDelete("{productId}")]
         [SwaggerOperation(Summary = "Delete product")]
-        public async Task<IActionResult> DeleteProduct([FromRoute] int productId)
+        public async Task<IActionResult> DeleteProduct([FromRoute] int restaurantId, [FromRoute] int productId)
         {
-            await _productService.DeleteAsync(productId);
-            return Ok();
+            await _productService.DeleteAsync(restaurantId, productId);
+            return NoContent();
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> GetProducts(
-        //    [FromRoute] int restaurantId,
-        //    [FromQuery] int? categoryId,
-        //    [FromQuery] string? categoryName)
-        //{
-        //    var products = await _productService.GetAllAsync(restaurantId, categoryId, categoryName);
-        //    return Ok(products);
-        //}
 
 
-        //[SwaggerOperation(Summary = "Get all products (summary view)")]
-        //[HttpGet]
-        //public async Task<IActionResult> GetAllProducts([FromQuery] string? name)
-        //{
-        //    if(string.IsNullOrWhiteSpace(name))
-        //    {
-        //        var products = await _productService.GetAllAsync();
-        //        return Ok(products);
-        //    }
-        //    else
-        //    {
-        //        var foundProducts = await _productService.SearchByNameAsync(name);
-        //        return Ok(foundProducts);
-        //    }
-        //}
-
-        //[HttpGet("{productId}")]
-        //[SwaggerOperation(Summary = "Get a single product with full details by id")]
-        //public async Task<IActionResult> GetProductById([FromRoute] int resturantId, [FromRoute] int productId)
-        //{
-        //    var product = await _productService.GetByIdAsync(productId);
-
-        //    if (product == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(product);
-        //}
-
-        //[HttpPost]
-        //[SwaggerOperation(Summary = "Create a new product")]
-        //public async Task<IActionResult> CreateProduct([FromRoute] int restaurantId,[FromBody] CreateProductDto dto)
-        //{
-        //    //var newProduct = await _productService.CreateAsync(dto, restaurantId);
-
-        //    return CreatedAtAction(nameof(GetProductById), new { restaurantId = restaurantId, productId = newProduct.Id }, new { id = newProduct.Id });
-        //}
-
-        //[SwaggerOperation(Summary = "Update an existing product's core data")]
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductDto updatedProduct)
-        //{
-        //    await _productService.UpdateAsync(id, updatedProduct);
-        //    return NoContent();
-        //}
-
-        //[SwaggerOperation(Summary = "Delete a product")]
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteProduct(int id)
-        //{
-        //    await _productService.DeleteAsync(id);
-        //    return NoContent();
-        //}
+        [HttpPost("{productId}/ingredients")]
+        [SwaggerOperation(Summary = "Add ingredient to specific product")]
+        public async Task<IActionResult> AddIngredientProduct([FromRoute] int restaurantId, [FromRoute] int productId, AddIngredientToProductDto dto)
+        {
+            var addedIngredient = await _productService.AddIngredientToProductAsync(restaurantId, productId, dto);
+            return Ok(addedIngredient);
+        }
 
 
-        //// --- DEDYKOWANE ENDPOINTY DO ZARZĄDZANIA SKŁADNIKAMI ---
-
-        //[SwaggerOperation(Summary = "Add an ingredient to a product")]
-        //[HttpPost("{productId}/ingredients")]
-        //public async Task<IActionResult> AddIngredientToProduct(int productId, [FromBody] IngredientAmountDto ingredientDto)
-        //{
-        //    await _productService.AddIngredientToProductAsync(productId, ingredientDto);
-        //    return Ok();
-        //}
 
         //[SwaggerOperation(Summary = "Update an ingredient's quantity in a product")]
         //[HttpPut("{productId}/ingredients/{ingredientId}")]

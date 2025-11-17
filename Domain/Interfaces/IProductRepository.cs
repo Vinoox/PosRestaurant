@@ -7,20 +7,12 @@ using Domain.Entities;
 
 namespace Domain.Interfaces
 {
-    public interface IProductRepository
+    public interface IProductRepository : IGenericRepository<Product>
     {
-        //Task<IEnumerable<Product>> GetAllAsync(int restaurantId, int? categoryId);
-
         Task<IEnumerable<Product>> GetAllAsync(int restaurantId);
         Task<IEnumerable<Product>> GetAllByCategoryIdAsync(int restaurantId, int categoryId);
-        Task<Product?> GetByProductNameAsync(int restaurantId, string productName);
-        Task<Product?> GetByProductIdAsync(int productId);
-        void Add(Product product);
-        void Delete(Product product);
-        
-
-
-        //Task<Product?> GetByIdWithDetailsAsync(int restuarantId, int id);
-        //void Update(int restuarantId, Product product);
+        Task<Product?> GetByNameAsync(int restaurantId, string productName);
+        Task<Product?> GetByIdAsync(int restaurantId, int productId);
+        Task<Product?> GetByIdWithDetailsAsync(int restaurantId, int productId);
     }
 }

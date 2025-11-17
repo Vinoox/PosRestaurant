@@ -10,10 +10,10 @@ namespace Domain.Interfaces
     public interface ICategoryRepository
     {
         Task<IEnumerable<Category>> GetAllByRestaurantIdAsync(int restuarantId);
-        Task<Category?> GetByIdAsync(int id);
-        Task<Category?> GetByNameAsync(string name, int restaurantId);
+        Task<Category?> GetByIdAsync(int restaurantId, int id);
+        Task<Category?> GetByNameAsync(int restaurantId, string name);
         void Add(Category category);
         void Update(Category category);
-        Task DeleteAsync(int id);
+        void Delete(Category category);
     }
 }

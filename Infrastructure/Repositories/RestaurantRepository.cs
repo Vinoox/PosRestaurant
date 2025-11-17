@@ -18,9 +18,9 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task CreateAsync(Restaurant restaurant)
+        public void CreateAsync(Restaurant restaurant)
         {
-            await _context.Restaurants.AddAsync(restaurant);
+            _context.Restaurants.Add(restaurant);
         }
         public async Task<Restaurant?> GetByIdAsync(int id)
         {

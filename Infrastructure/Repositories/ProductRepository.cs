@@ -7,24 +7,19 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
 
 namespace Infrastructure.Repositories
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository : GenericRepository<Product>, IProductRepository
     {
-        private readonly PosRestaurantContext _context;
-
-        public ProductRepository(PosRestaurantContext context)
-        {
-            _context = context;
-        }
+        public ProductRepository(PosRestaurantContext context) : base(context) { }
 
         public async Task<IEnumerable<Product>> GetAllAsync(int restaurantId)
         {
             return await _context.Products
                 .Where(p => p.RestaurantId == restaurantId)
                 .Include(p => p.Category)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
@@ -32,29 +27,28 @@ namespace Infrastructure.Repositories
         {
             return await _context.Products
                 .Where(p => p.RestaurantId == restaurantId && p.CategoryId == categoryId)
+                .AsNoTracking()
                 .ToListAsync();
         }
 
-        public async Task<Product?> GetByProductNameAsync(int restaurantId, string productName)
+        public async Task<Product?> GetByNameAsync(int restaurantId, string productName)
         {
             return await _context.Products
-                .FirstOrDefaultAsync(p => p.RestaurantId == restaurantId && p.Name == productName);
+                .FirstOrDefaultAsync(p => p.RestaurantId == restaurantId && p.Name.ToLower() == productName.ToLower());
         }
 
-        public async Task<Product?> GetByProductIdAsync(int productId)
+        public async Task<Product?> GetByIdAsync(int restaurantId, int productId)
         {
             return await _context.Products
-                .FirstOrDefaultAsync(p => p.Id == productId);
+                .FirstOrDefaultAsync(p => p.Id == productId && p.RestaurantId == restaurantId);
         }
 
-        public void Add(Product product)
+        public async Task<Product?> GetByIdWithDetailsAsync(int restaurantId, int productId)
         {
-            _context.Products.Add(product);
-        }
-
-        public void Delete(Product product)
-        {
-            _context.Products.Remove(product);
+            return await _context.Products
+            .Include(p => p.ProductIngredients)
+            .Include(p => p.Category)
+            .SingleOrDefaultAsync(p => p.Id == productId && p.RestaurantId == restaurantId);
         }
     }
 }

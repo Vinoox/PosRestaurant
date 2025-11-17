@@ -10,7 +10,7 @@ namespace Domain.Interfaces
     public interface IRestaurantRepository
     {
         Task<Restaurant?> GetByIdAsync(int id);
-        Task CreateAsync(Restaurant restaurant);
+        void CreateAsync(Restaurant restaurant);
         Task<IEnumerable<Restaurant>> FindByUserIdAsync(string userId);
         Task<int> CountByIdAndRoleNameAsync(int id, string roleName);
     }

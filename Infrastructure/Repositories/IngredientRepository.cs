@@ -19,48 +19,44 @@ namespace Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Ingredient>> GetAllAsync()
-        {
-            return await _context.Ingredients.ToListAsync();
-        }
-
-        public async Task<Ingredient?> GetByIdAsync(int id)
-        {
-            return await _context.Ingredients.FindAsync(id);
-        }
-
-        public async Task<Ingredient?> GetByNameAsync(string name)
-        {
-            return await _context.Ingredients.SingleOrDefaultAsync(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-        }
-
-        public async Task<Ingredient> AddAsync(Ingredient ingredient)
-        {
-            await _context.Ingredients.AddAsync(ingredient);
-            await _context.SaveChangesAsync();
-            return ingredient;
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var ingredient = await _context.Ingredients.FindAsync(id);
-            if(ingredient != null)
-            {
-                _context.Ingredients.Remove(ingredient);
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        public async Task UpdateAsync(Ingredient ingredient)
-        {
-            _context.Ingredients.Update(ingredient);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<int> CountExistingAsync(IEnumerable<int> ingredientIds)
+        public async Task<IEnumerable<Ingredient>> GetAllAsync(int restaurantId)
         {
             return await _context.Ingredients
-                .CountAsync(ingredient => ingredientIds.Contains(ingredient.Id));
+                .Where(i => i.RestaurantId == restaurantId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Ingredient>> GetAllByProductIdAsync(int restauarntId, int productId)
+        {
+            return await _context.ProductIngredients
+                .Where(pi => pi.ProductId == productId)
+                .Select(pi => pi.Ingredient)
+                .Where(pi => pi.RestaurantId == restauarntId)
+                .ToListAsync();
+        }
+
+        public async Task<Ingredient?> GetByIdAsync(int restaurntId, int ingredientId)
+        {
+            return await _context.Ingredients
+                .FirstOrDefaultAsync(i => i.Id == ingredientId && i.RestaurantId == restaurntId);
+        }
+
+        public async Task<Ingredient?> GetByNameAsync(int restaurantId, string name)
+        {
+            var normalizeName = name.ToLower();
+
+            return await _context.Ingredients
+                .Where(i => i.RestaurantId == restaurantId)
+                .FirstOrDefaultAsync(i => i.Name.ToLower() == normalizeName);
+        }
+        public void Add(Ingredient ingredient)
+        {
+            _context.Ingredients.Add(ingredient);
+        }
+
+        public void Delete(Ingredient ingredient)
+        {
+            _context.Ingredients.Remove(ingredient);
         }
     }
 }

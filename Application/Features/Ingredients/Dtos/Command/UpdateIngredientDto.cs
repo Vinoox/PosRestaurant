@@ -7,15 +7,11 @@ using Application.Common.Mappings;
 using Domain.Entities;
 using Domain.Enums;
 
-namespace Application.Features.Ingredients.Dtos
+namespace Application.Features.Ingredients.Dtos.Command
 {
-    public class UpdateIngredientDto : IMap
+    public class UpdateIngredientDto
     {
         public string? Name { get; set; }
         public Unit? Unit { get; set; }
-        public void Mapping(AutoMapper.Profile profile)
-        {
-            profile.CreateMap<UpdateIngredientDto, Ingredient>();
-        }
     }
 }
