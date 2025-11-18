@@ -10,7 +10,7 @@ namespace Application.Features.StaffManagement.Dtos.Validators
 {
     public class RemoveStaffMemberDtoValidator : AbstractValidator<RemoveStaffMemberDto>
     {
-        public RemoveStaffMemberDtoValidator() 
+        public RemoveStaffMemberDtoValidator()
         {
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")

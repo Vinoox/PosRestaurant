@@ -10,19 +10,13 @@ using Domain.Enums;
 
 namespace Application.Features.Users.Dtos.Commands
 {
-    public class RegisterUserDto : IMap
+    public class RegisterUserDto
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string ConfirmPassword { get; set; }
-        public string Pin { get; set; }
-
-        public void Mapping(Profile profile)
-        {
-            profile.CreateMap<RegisterUserDto, User>()
-            .ForMember(dest => dest.PasswordHash, opt => opt.MapFrom(src => src.Email));
-        }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string Email { get; set; }
+        public required string Password { get; set; }
+        public required string ConfirmPassword { get; set; }
+        public required string Pin { get; set; }
     }
 }

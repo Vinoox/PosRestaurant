@@ -8,8 +8,7 @@ namespace Application.Features.Users.Dtos.Commands
 {
     public class LoginByPinDto
     {
-        public string Email { get; set; }
-        public string Pin { get; set; }
-        //public int RestaurantId { get; set; }
+        public required string Email { get; set; }
+        public required string Pin { get; set; }
     }
 }

@@ -25,6 +25,7 @@ namespace Application.Interfaces
 
         Task<ProductIngredientDto> AddIngredientToProductAsync(int restaurantId, int productId, AddIngredientToProductDto dto);
         Task RemoveIngredientFromProductAsync(int restaurantId, int productId, int ingredientId);
-        Task UpdateIngredientQuantityAsync(int restaurantId, int productId, int ingredientId, int newQuantity);
+        Task UpdateIngredientAmountAsync(int restaurantId, int productId, int ingredientId, decimal newAmount);
+        Task ClearIngredientListAsync(int restaurantId, int productId);
     }
 }

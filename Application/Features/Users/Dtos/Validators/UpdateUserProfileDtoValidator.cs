@@ -19,10 +19,6 @@ namespace Application.Features.Users.Dtos.Validators
             RuleFor(x => x.LastName)
                 .NotEmpty().WithMessage("Nazwisko nie może być puste.")
                 .When(x => x.LastName != null);
-
-            RuleFor(x => x.Duty)
-                .IsInEnum().WithMessage("Podano nieprawidłową rolę.")
-                .When(x => x.Duty.HasValue);
         }
     }
 }

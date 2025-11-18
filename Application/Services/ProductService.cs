@@ -139,14 +139,47 @@ namespace Application.Services
             return _mapper.Map<ProductIngredientDto>(productIngredient);
         }
 
-        public Task RemoveIngredientFromProductAsync(int restaurantId, int productId, int ingredientId)
+        public async Task RemoveIngredientFromProductAsync(int restaurantId, int productId, int ingredientId)
         {
-            throw new NotImplementedException();
+            var product = await _productRepository.GetByIdWithIngredientsAsync(restaurantId, productId)
+                ??throw new NotFoundException($"Produkt o ID {productId} nie został znaleziony.");
+
+            try
+            {
+                product.RemoveIngredient(ingredientId);
+            }
+            catch (DomainException ex)
+            {
+                throw new BadRequestException(ex.Message);
+            }
+
+            await _unitOfWork.CommitTransactionAsync();
         }
 
-        public Task UpdateIngredientQuantityAsync(int restaurantId, int productId, int ingredientId, int newQuantity)
+        public async Task UpdateIngredientAmountAsync(int restaurantId, int productId, int ingredientId, decimal newAmount)
         {
-            throw new NotImplementedException();
+            var product = await _productRepository.GetByIdWithIngredientsAsync(restaurantId, productId)
+                ??throw new NotFoundException($"Produkt o ID {productId} nie został znaleziony.");
+
+            try
+            {
+                product.UpdateIngredientAmount(ingredientId, newAmount);
+            }
+            catch (DomainException ex)
+            {
+                throw new BadRequestException(ex.Message);
+            }
+
+            await _unitOfWork.CommitTransactionAsync();
+        }
+
+        public async Task ClearIngredientListAsync(int restaurantId, int productId)
+        {
+            var product = await _productRepository.GetByIdWithIngredientsAsync(restaurantId, productId)
+                ??throw new NotFoundException($"Produkt o ID {productId} nie został znaleziony.");
+
+            product.ClearIngredients();
+            await _unitOfWork.CommitTransactionAsync();
         }
     }
 }

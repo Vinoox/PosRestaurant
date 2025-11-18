@@ -14,5 +14,6 @@ namespace Domain.Interfaces
         Task<Product?> GetByNameAsync(int restaurantId, string productName);
         Task<Product?> GetByIdAsync(int restaurantId, int productId);
         Task<Product?> GetByIdWithDetailsAsync(int restaurantId, int productId);
+        Task<Product?> GetByIdWithIngredientsAsync(int restaurantId, int productId);
     }
 }

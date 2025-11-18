@@ -13,7 +13,7 @@ namespace Application.Features.StaffManagement.Dtos.Validators
 {
     public class AddStaffMemberDtoValidator : AbstractValidator<AddStaffMemberDto>
     {
-        public AddStaffMemberDtoValidator(RoleManager<IdentityRole> roleManager) 
+        public AddStaffMemberDtoValidator(RoleManager<IdentityRole> roleManager)
         {
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage("Email is required.")

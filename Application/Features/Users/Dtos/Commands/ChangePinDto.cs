@@ -8,8 +8,8 @@ namespace Application.Features.Users.Dtos.Commands
 {
     public class ChangePinDto
     {
-        public string OldPin { get; set; } = null!;
-        public string NewPin { get; set; } = null!;
-        public string ConfirmNewPin { get; set; } = null!;
+        public required string OldPin { get; set; }
+        public required string NewPin { get; set; }
+        public required string ConfirmNewPin { get; set; }
     }
 }

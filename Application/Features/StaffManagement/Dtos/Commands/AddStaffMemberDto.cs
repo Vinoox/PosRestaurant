@@ -10,6 +10,6 @@ namespace Application.Features.StaffManagement.Dtos.Commands
     public class AddStaffMemberDto
     {
         public required string Email { get; set; }
-        public string RoleName { get; set; }
+        public required string RoleName { get; set; }
     }
 }

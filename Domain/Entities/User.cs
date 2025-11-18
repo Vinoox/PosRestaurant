@@ -18,20 +18,20 @@ namespace Domain.Entities
         public static User Create(string firstName, string lastName, string email)
         {
             if (string.IsNullOrWhiteSpace(firstName))
-                throw new ArgumentException("First name cannot be empty.", nameof(firstName));
+                throw new DomainException("Imię nie może być puste");
 
             if (string.IsNullOrWhiteSpace(lastName))
-                throw new ArgumentException("Last name cannot be empty.", nameof(lastName));
+                throw new DomainException("Nazwisko nie może być puste");
 
             if (string.IsNullOrWhiteSpace(email))
-                throw new ArgumentException("Email cannot be empty.", nameof(email));
+                throw new DomainException("Email nie może być pusty");
 
             return new User
             {
                 FirstName = NormalizeString(firstName),
                 LastName = NormalizeString(lastName),
-                Email = email.ToLower(),
-                UserName = email.ToLower()
+                Email = email.ToLower().Trim(),
+                UserName = email.ToLower().Trim()
             };
         }
 
@@ -54,13 +54,17 @@ namespace Domain.Entities
         public void SetPinHash(string newPinHash)
         {
             if (string.IsNullOrWhiteSpace(newPinHash))
-                throw new ArgumentException("PIN hash cannot be empty.", nameof(newPinHash));
+                throw new DomainException("PIN nie może być pusty");
 
             PinHash = newPinHash;
         }
 
         private static string NormalizeString(string value)
         {
+            var trimmed = value.Trim();
+
+            if (trimmed.Length == 0) return string.Empty;
+            if (trimmed.Length == 1) return trimmed.ToUpper();
             return char.ToUpper(value[0]) + value.Substring(1).ToLower();
         }
     }

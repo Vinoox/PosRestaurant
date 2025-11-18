@@ -34,7 +34,7 @@ namespace Infrastructure.Repositories
         public async Task<Product?> GetByNameAsync(int restaurantId, string productName)
         {
             return await _context.Products
-                .FirstOrDefaultAsync(p => p.RestaurantId == restaurantId && p.Name.ToLower() == productName.ToLower());
+                .FirstOrDefaultAsync(p => p.RestaurantId == restaurantId && string.Equals(p.Name, productName, StringComparison.CurrentCultureIgnoreCase));
         }
 
         public async Task<Product?> GetByIdAsync(int restaurantId, int productId)
@@ -48,7 +48,15 @@ namespace Infrastructure.Repositories
             return await _context.Products
             .Include(p => p.ProductIngredients)
             .Include(p => p.Category)
+            .Include(p => p.ProductIngredients)
             .SingleOrDefaultAsync(p => p.Id == productId && p.RestaurantId == restaurantId);
+        }
+
+        public async Task<Product?> GetByIdWithIngredientsAsync(int restaurantId, int productId)
+        {
+            return await _context.Products
+                .Include(p => p.ProductIngredients).ThenInclude(pi => pi.Ingredient)
+                .SingleOrDefaultAsync(p => p.Id == productId && p.RestaurantId == restaurantId);
         }
     }
 }
