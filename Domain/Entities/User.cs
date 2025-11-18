@@ -9,11 +9,11 @@ namespace Domain.Entities
     {
         public string FirstName { get; private set; } = null!;
         public string LastName { get; private set; } = null!;
-        public string? PinHash { get; private set; } = null!;
-        public ICollection<StaffAssignment> StaffAssignments { get; set; } = new List<StaffAssignment>();
-        private User()
-        {
-        }
+        public string PinHash { get; private set; } = null!;
+
+        private readonly List<StaffAssignment> _staffAssignments = new();
+        public IReadOnlyCollection<StaffAssignment> StaffAssignments => _staffAssignments.AsReadOnly();
+        private User(){}
 
         public static User Create(string firstName, string lastName, string email)
         {
@@ -35,13 +35,20 @@ namespace Domain.Entities
             };
         }
 
-        public void UpdateProfile(string? firstName, string? lastName)
+        public void UpdateFirstName(string newFirstName)
         {
-            if (!string.IsNullOrWhiteSpace(firstName))
-                FirstName = NormalizeString(firstName);
+            if (string.IsNullOrWhiteSpace(newFirstName))
+                throw new DomainException("Imię nie może być puste");
 
-            if (!string.IsNullOrWhiteSpace(lastName))
-                LastName = NormalizeString(lastName);
+            FirstName = NormalizeString(newFirstName);
+        }
+
+        public void UpdateLastName(string newLastName)
+        {
+            if (string.IsNullOrWhiteSpace(newLastName))
+                throw new DomainException("Nazwisko nie może być puste");
+
+            LastName = NormalizeString(newLastName);
         }
 
         public void SetPinHash(string newPinHash)
@@ -56,7 +63,5 @@ namespace Domain.Entities
         {
             return char.ToUpper(value[0]) + value.Substring(1).ToLower();
         }
-
     }
-
 }

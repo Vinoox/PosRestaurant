@@ -36,33 +36,23 @@ namespace Application.Services
         }
         public async Task AddStaffMemberAsync(int restaurantId, AddStaffMemberDto dto)
         {
-            await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                var userToAdd = await _userService.FindByEmailOrThrowAsync(dto.Email);
-                var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
-                if (restaurant == null)
-                    throw new NotFoundException("Restauracja", restaurantId);
+            var userToAdd = await _userService.FindByEmailOrThrowAsync(dto.Email);
+            var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
+            if (restaurant == null)
+                throw new NotFoundException("Restauracja", restaurantId);
 
+            var existingAssignment = await _staffAssignmentRepository.FindByUserIdAndRestaurantIdAsync(userToAdd.Id, restaurant.Id);
+            if (existingAssignment != null)
+                throw new BadRequestException($"Użytkownik jest już przypisany do tej restauracji.");
 
-                var role = await _roleManager.FindByNameAsync(dto.RoleName);
-                if (role == null)
-                    throw new BadRequestException($"Rola '{dto.RoleName}' nie została znaleziona.");
+            var role = await _roleManager.FindByNameAsync(dto.RoleName);
+            if (role == null)
+                throw new BadRequestException($"Rola '{dto.RoleName}' nie została znaleziona.");
 
-                var existingAssignment = await _staffAssignmentRepository.FindByUserIdAndRestaurantIdAsync(userToAdd.Id, restaurant.Id);
-                if (existingAssignment != null)
-                    throw new BadRequestException($"Użytkownik jest już przypisany do tej restauracji.");
+            var assignment = StaffAssignment.Create(userToAdd, restaurant, role);
 
-                var assignment = StaffAssignment.Create(userToAdd, restaurant, role);
-
-                _staffAssignmentRepository.Add(assignment);
-                await _unitOfWork.CommitTransactionAsync();
-            }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            _staffAssignmentRepository.Add(assignment);
+            await _unitOfWork.CommitTransactionAsync();
         }
 
         public async Task AddInitialMemberAsync(Restaurant restaurant, User user)
@@ -77,66 +67,51 @@ namespace Application.Services
 
         public async Task RemoveStaffMemberAsync(int restaurantId, RemoveStaffMemberDto dto)
         {
-            await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                var userToRemove = await _userService.FindByEmailOrThrowAsync(dto.Email);
-                var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
+            var userToRemove = await _userService.FindByEmailOrThrowAsync(dto.Email);
+            var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
 
-                var existingAssignment = await FindAssignmentOrThrowAsync(userToRemove.Id, restaurant.Id);
+            if (restaurant == null)
+                throw new NotFoundException("Restauracja nie istnieje");
 
-                if(existingAssignment.Role.Name == "RestaurantAdmin")
-                        throw new BadRequestException("Nie można usunąć administratora restauracji.");
+            var existingAssignment = await FindAssignmentOrThrowAsync(userToRemove.Id, restaurant.Id);
 
-                _staffAssignmentRepository.Remove(existingAssignment);
-                await _unitOfWork.CommitTransactionAsync();
-            }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            if(existingAssignment.Role.Name == "RestaurantAdmin")
+                    throw new BadRequestException("Nie można usunąć administratora restauracji.");
+
+            _staffAssignmentRepository.Remove(existingAssignment);
+            await _unitOfWork.CommitTransactionAsync();
         }
 
         public async Task ChangeStaffMemberRoleAsync(int restaurantId, ChangeStaffMemberRoleDto dto)
         {
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            var userToChange = await _userService.FindByEmailOrThrowAsync(dto.Email);
+
+            var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
+            if (restaurant == null)
+                throw new NotFoundException("Restauracja nie istnieje");
+
+            var newRole = await _roleManager.FindByNameAsync(dto.NewRole);
+            if (newRole == null)
+                throw new BadRequestException($"Rola '{dto.NewRole}' nie została znaleziona.");
+
+            var existingAssignment = await FindAssignmentOrThrowAsync(userToChange.Id, restaurant.Id);
+
+            if(existingAssignment.Role.Name == "RestaurantAdmin")
             {
-                var userToChange = await _userService.FindByEmailOrThrowAsync(dto.Email);
-                var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
-
-                var newRole = await _roleManager.FindByNameAsync(dto.NewRole);
-                if (newRole == null)
-                    throw new BadRequestException($"Rola '{dto.NewRole}' nie została znaleziona.");
-
-                var existingAssignment = await FindAssignmentOrThrowAsync(userToChange.Id, restaurant.Id);
-
-                if(existingAssignment.Role.Name == "RestaurantAdmin")
-                {
-                    int adminCount = await _restaurantRepository.CountByIdAndRoleNameAsync(restaurant.Id, "RestaurantAdmin");
-                    if (adminCount <= 1)
-                        throw new BadRequestException("Nie można zmienić roli ostatniego administratora restauracji.");
-                }
-
-
-                _staffAssignmentRepository.Remove(existingAssignment);
-                var updatedAssignment = StaffAssignment.Create(userToChange, restaurant, newRole);
-                _staffAssignmentRepository.Add(updatedAssignment);
-                await _unitOfWork.CommitTransactionAsync();
+                int adminCount = await _restaurantRepository.CountByIdAndRoleNameAsync(restaurant.Id, "RestaurantAdmin");
+                if (adminCount <= 1)
+                    throw new BadRequestException("Nie można zmienić roli ostatniego administratora restauracji.");
             }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+
+            existingAssignment.ChangeRole(newRole);
+            await _unitOfWork.CommitTransactionAsync();
         }
 
         private async Task<StaffAssignment> FindAssignmentOrThrowAsync(string userId, int restaurantId)
         {
-            var assignment = await _staffAssignmentRepository.FindByUserIdAndRestaurantIdAsync(userId, restaurantId);
-            if (assignment == null)
+            var assignment = await _staffAssignmentRepository.FindByUserIdAndRestaurantIdAsync(userId, restaurantId) ??
                 throw new NotFoundException($"Pracownik o podanym ID nie jest przypisany do tej restauracji.");
+
             return assignment;
         }
     }

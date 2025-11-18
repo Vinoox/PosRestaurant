@@ -11,6 +11,5 @@ namespace Application.Features.Users.Dtos.Commands
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
-        public UserRole? Duty { get; set; }
     }
 }

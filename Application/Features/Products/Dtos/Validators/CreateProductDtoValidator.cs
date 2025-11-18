@@ -19,16 +19,15 @@ namespace Application.Features.Products.Dtos.Validators
                 .MaximumLength(100).WithMessage("Nazwa produktu nie może być dłuższa niż 100 znaków.");
 
             RuleFor(dto => dto.Description)
-            .MaximumLength(500).WithMessage("Opis nie może być dłuższy niż 500 znaków.");
+                .MaximumLength(500).WithMessage("Opis nie może być dłuższy niż 500 znaków.");
 
             RuleFor(dto => dto.Price)
                 .NotEmpty().WithMessage("Cena produktu jest wymagana.")
-                .GreaterThan(0).WithMessage("Cena musi być większa od zera.");
+                .GreaterThanOrEqualTo(0).WithMessage("Cena nie może być ujemna");
 
             RuleFor(dto => dto.CategoryId)
                 .NotEmpty().WithMessage("ID kategorii jest wymagane.")
                 .GreaterThan(0).WithMessage("ID kategorii musi być poprawną liczbą.");
-
         }
     }
 }

@@ -14,26 +14,17 @@ namespace Application.Interfaces
     public interface IProductService
     {
         Task <IEnumerable<ProductDto>> GetAllAsync(int restaurantId);
-
         Task<IEnumerable<ProductDto>> GetAllByCategoryIdAsync(int restaurantId, int categoryId);
-
         Task <ProductDto> GetByIdAsync(int restuarntId, int productId);
-        
         Task<int> CreateAsync(int restaurantId, CreateProductDto dto);
-
+        Task UpdateDetailsAsync(int restaurantId, int productId, UpdateProductDto dto);
         Task DeleteAsync(int restaurantId, int productId);
-
-
 
         Task<Product> FindByIdOrThrowAsync(int restaurantId, int productId);
 
 
-        //Task UpdateAsync(int id, UpdateProductDto updatedProduct);
-
         Task<ProductIngredientDto> AddIngredientToProductAsync(int restaurantId, int productId, AddIngredientToProductDto dto);
-
-
-        //Task RemoveIngredientFromProductAsync(int restaurantId, int productId, int ingredientId);
-        //Task UpdateIngredientQuantityAsync(int restaurantId, int productId, int ingredientId, int newQuantity);
+        Task RemoveIngredientFromProductAsync(int restaurantId, int productId, int ingredientId);
+        Task UpdateIngredientQuantityAsync(int restaurantId, int productId, int ingredientId, int newQuantity);
     }
 }

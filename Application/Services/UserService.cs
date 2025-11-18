@@ -20,7 +20,6 @@ namespace Application.Services
         private readonly IPinHasher _pinHasher;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IMapper _mapper;
-        //private readonly IRestaurantService _restaurantService;
         private readonly IRestaurantRepository _restaurantRepository;
         private readonly IStaffAssignmentRepository _staffAssignmentRepository;
 
@@ -29,7 +28,6 @@ namespace Application.Services
             IPinHasher pinHasher,
             IJwtTokenGenerator jwtTokenGenerator,
             IMapper mapper,
-            //IRestaurantService restaurantService,
             IRestaurantRepository restaurantRepository,
             IStaffAssignmentRepository staffAssignmentRepository)
         {
@@ -37,24 +35,18 @@ namespace Application.Services
             _pinHasher = pinHasher;
             _jwtTokenGenerator = jwtTokenGenerator;
             _mapper = mapper;
-            //_restaurantService = restaurantService;
             _restaurantRepository = restaurantRepository;
             _staffAssignmentRepository = staffAssignmentRepository;
         }
 
         public async Task<AuthenticationResultDto?> AuthenticateAsync(AuthenticateDto dto)
         {
-            var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null || !await _userManager.CheckPasswordAsync(user, dto.Password))
-            {
-                return null;
-            }
+            var user = await FindByEmailOrThrowAsync(dto.Email);
 
             var globalRoles = await _userManager.GetRolesAsync(user);
 
             var authToken = _jwtTokenGenerator.GenerateAuthenticationToken(user, globalRoles);
 
-            //var availableRestaurants = await _restaurantService.GetByUserIdAsync(user.Id);
             var avaailableRestaurantsEntities = await _restaurantRepository.FindByUserIdAsync(user.Id);
             var availableRestaurants = _mapper.Map<IEnumerable<RestaurantSummaryDto>>(avaailableRestaurantsEntities);
 
@@ -68,20 +60,12 @@ namespace Application.Services
 
         public async Task<string> GenerateContextualTokenAsync(string userId, int restaurantId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                throw new UnauthorizedAccessException("Użytkownik o podanym ID nie istnieje.");
-            }
+            var user = await FindByIdOrThrowAsync(userId);
 
-            var assignment = await _staffAssignmentRepository.FindByUserIdAndRestaurantIdAsync(userId, restaurantId);
+            var assignment = await _staffAssignmentRepository.FindByUserIdAndRestaurantIdAsync(userId, restaurantId)
+                ??throw new UnauthorizedAccessException("Użytkownik nie jest przypisany do tej restauracji.");
 
-            if (assignment == null)
-            {
-                throw new UnauthorizedAccessException("Użytkownik nie jest przypisany do tej restauracji.");
-            }
-
-            var restaurantRoles = new List<string> { assignment.Role.Name };
+            var restaurantRoles = new List<string> { assignment.Role.Name! };
 
             return _jwtTokenGenerator.GenerateContextualToken(user, restaurantId, restaurantRoles);
         }
@@ -94,11 +78,14 @@ namespace Application.Services
 
             var result = await _userManager.CreateAsync(user, dto.Password);
 
-            if (!result.Succeeded) return result;
+            if (!result.Succeeded)
+            {
+                if (result.Errors.Any(e => e.Code == "DuplicateEmail"))
+                    throw new BadRequestException("Użytkownik o podanym adresie email już istnieje");
+                return result;
+            }
 
             await _userManager.AddToRoleAsync(user, "Default");
-
-
             return result;
         }
 
@@ -132,35 +119,40 @@ namespace Application.Services
 
         public async Task<User> FindByEmailOrThrowAsync(string email)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(email)
+                ??throw new NotFoundException("User", email);
 
-            if (user == null)
-                throw new NotFoundException("User", email);
+            return user;
+        }
+
+        public async Task<User> FindByIdOrThrowAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId)
+                ??throw new NotFoundException("User", userId);
 
             return user;
         }
 
         public async Task<IdentityResult> ChangePasswordAsync(string userId, ChangePasswordDto dto)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) throw new KeyNotFoundException("Użytkownik nie znaleziony.");
+            var user = await FindByIdOrThrowAsync(userId);
             return await _userManager.ChangePasswordAsync(user, dto.OldPassword, dto.NewPassword);
         }
 
         public async Task UpdateProfileAsync(string userId, UpdateUserProfileDto dto)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) throw new KeyNotFoundException("Użytkownik nie znaleziony.");
+            var user = await FindByIdOrThrowAsync(userId);
 
-            user.UpdateProfile(dto.FirstName, dto.LastName);
+            if(dto.FirstName != null) user.UpdateFirstName(dto.FirstName);
+
+            if(dto.LastName != null) user.UpdateLastName(dto.LastName);
 
             await _userManager.UpdateAsync(user);
         }
 
         public async Task ChangePinAsync(string userId, ChangePinDto dto)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) throw new KeyNotFoundException("Użytkownik nie znaleziony.");
+            var user = await FindByIdOrThrowAsync(userId);
 
             if (!_pinHasher.Verify(user.PinHash, dto.OldPin))
             {
@@ -174,20 +166,8 @@ namespace Application.Services
 
         public async Task DeleteAsync(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user != null)
-            {
-                await _userManager.DeleteAsync(user);
-            }
-        }
-
-        public async Task<User> FindByIdOrThrowAsync(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-                throw new NotFoundException("User", userId);
-
-            return user;
+            var user = await FindByIdOrThrowAsync(userId);
+            await _userManager.DeleteAsync(user);
         }
     }
 }

@@ -19,20 +19,27 @@ namespace Infrastructure.Data
         }
         public async Task BeginTransactionAsync()
         {
-            _transaction = await _context.Database.BeginTransactionAsync();
+            if(_transaction == null)
+            {
+                _transaction = await _context.Database.BeginTransactionAsync();
+            }
         }
 
         public async Task CommitTransactionAsync()
         {
-            try
+            await _context.SaveChangesAsync();
+
+            if(_transaction != null)
             {
-                await _context.SaveChangesAsync();
-                await _transaction?.CommitAsync();
-            }
-            finally
-            { 
-                await _transaction.DisposeAsync();
-                _transaction = null;
+                try
+                {
+                    await _transaction.CommitAsync();
+                }
+                finally
+                {
+                    await _transaction.DisposeAsync();
+                    _transaction = null;
+                }
             }
         }
 
@@ -40,9 +47,15 @@ namespace Infrastructure.Data
         {
             if (_transaction != null)
             {
-                await _transaction.RollbackAsync();
-                await _transaction.DisposeAsync();
-                _transaction = null;
+                try
+                {
+                    await _transaction.RollbackAsync();
+                }
+                finally
+                {
+                    await _transaction.DisposeAsync();
+                    _transaction = null;
+                }
             }
         }
 

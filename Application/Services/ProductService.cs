@@ -60,80 +60,83 @@ namespace Application.Services
 
         public async Task<int> CreateAsync(int restaurantId, CreateProductDto dto)
         {
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            await _categoryService.FindByIdOrThrowAsync(restaurantId, dto.CategoryId);
+
+            var existingProduct = await _productRepository.GetByNameAsync(restaurantId, dto.Name);
+            if (existingProduct != null)
+                throw new BadRequestException($"Product with name '{dto.Name}' already exists in this restaurant.");
+
+            var product = Product.Create(dto.Name, dto.Description, dto.Price, dto.CategoryId, restaurantId);
+
+            _productRepository.Add(product);
+            await _unitOfWork.CommitTransactionAsync();
+            return product.Id;
+        }
+
+        public async Task UpdateDetailsAsync(int restaurantId, int productId, UpdateProductDto dto)
+        {
+            var productToUpdate = await FindByIdOrThrowAsync(restaurantId, productId);
+
+            if(dto.Name != null)
             {
-                var category = await _categoryService.FindByIdOrThrowAsync(restaurantId, dto.CategoryId);
-
-                var existingProduct = await _productRepository.GetByNameAsync(restaurantId, dto.Name);
-                if (existingProduct != null)
-                    throw new BadRequestException($"Product with name '{dto.Name}' already exists in this restaurant.");
-
-                var product = Product.Create(dto.Name, dto.Description, dto.Price, dto.CategoryId, restaurantId);
-
-                _productRepository.Add(product);
-                await _unitOfWork.CommitTransactionAsync();
-                return product.Id;
+                productToUpdate.UpdateName(dto.Name);
             }
-            catch (Exception)
+
+            if (dto.Description != null)
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                productToUpdate.UpdateDescription(dto.Description);
             }
+
+            if(dto.Price.HasValue)
+            {
+                productToUpdate.UpdatePrice(dto.Price.Value);
+            }
+
+            if (dto.CategoryId.HasValue)
+            {
+                await _categoryService.FindByIdOrThrowAsync(restaurantId, dto.CategoryId.Value);
+                productToUpdate.UpdateCategory(dto.CategoryId.Value);
+            }
+
+            await _unitOfWork.CommitTransactionAsync();
         }
 
         public async Task DeleteAsync(int restaurantId, int productId)
         {
-            await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                var product = await FindByIdOrThrowAsync(restaurantId, productId);
+            var product = await FindByIdOrThrowAsync(restaurantId, productId);
+            _productRepository.Remove(product);
+            await _unitOfWork.CommitTransactionAsync();
 
-                _productRepository.Remove(product);
-                await _unitOfWork.CommitTransactionAsync();
-            }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
         }
 
         public async Task<Product> FindByIdOrThrowAsync(int restaurantId, int productId)
         {
-            var product = await _productRepository.GetByIdAsync(restaurantId, productId);
-            if(product == null)
-                throw new NotFoundException("Product", productId);
-            
+            var product = await _productRepository.GetByIdAsync(restaurantId, productId)
+                ??throw new NotFoundException("Product", productId);
+
             return product;
         }
 
+
+
+
         public async Task<ProductIngredientDto> AddIngredientToProductAsync(int restaurantId, int productId, AddIngredientToProductDto dto)
         {
-            await _unitOfWork.BeginTransactionAsync();
+            var product = await FindByIdOrThrowAsync(restaurantId, productId);
+            var ingredient = await _ingredientService.FindByIdOrThrowAsync(restaurantId, dto.IngredientId);
+
+            ProductIngredient productIngredient;
             try
             {
-                var product = await FindByIdOrThrowAsync(restaurantId, productId);
-                var ingredient = await _ingredientService.FindByIdOrThrowAsync(restaurantId, dto.IngredientId);
-
-                ProductIngredient productIngredient;
-                try
-                {
-                    productIngredient = product.AddIngredient(ingredient, dto.Amount, dto.Unit);
-                }
-                catch (DomainException ex)
-                {
-                    throw new BadRequestException(ex.Message);
-                }
-
-                await _unitOfWork.CommitTransactionAsync();
-                return _mapper.Map<ProductIngredientDto>(productIngredient);
+                productIngredient = product.AddIngredient(ingredient, dto.Amount, dto.Unit);
             }
-            catch (Exception)
+            catch (DomainException ex)
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
+                throw new BadRequestException(ex.Message);
             }
+
+            await _unitOfWork.CommitTransactionAsync();
+            return _mapper.Map<ProductIngredientDto>(productIngredient);
         }
 
         public Task RemoveIngredientFromProductAsync(int restaurantId, int productId, int ingredientId)

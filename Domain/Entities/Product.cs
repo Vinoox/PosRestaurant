@@ -12,7 +12,7 @@ namespace Domain.Entities
     {
         public string Name { get; private set; } = null!;
 
-        public string? Description { get; private set; }
+        public string Description { get; private set; } = null!;
 
         public decimal Price { get; private set; }
 
@@ -25,9 +25,7 @@ namespace Domain.Entities
         public Restaurant Restaurant { get; private set; } = null!;
         int ITenantEntity.RestaurantId { get => RestaurantId; set => RestaurantId = value; }
 
-        private Product()
-        {
-        }
+        private Product(){}
 
         public static Product Create(string name, string description, decimal price, int categoryId, int restaurantId)
         {
@@ -62,6 +60,14 @@ namespace Domain.Entities
                 throw new DomainException("Nazwa nie może być pusta");
 
             Name = newName;
+        }
+
+        public void UpdateDescription(string newDescription)
+        {
+            if (string.IsNullOrWhiteSpace(newDescription))
+                throw new DomainException("Opis nie może być pusty");
+
+            Description = newDescription;
         }
 
         public void UpdateCategory(int categoryId)

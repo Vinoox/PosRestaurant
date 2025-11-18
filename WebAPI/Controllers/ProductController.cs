@@ -46,6 +46,14 @@ namespace WebAPI.Controllers
             return CreatedAtAction(nameof(GetProductById), new { restaurantId = restaurantId, id = newProductId }, new { id = newProductId });
         }
 
+        [HttpPatch("{id}")]
+        [SwaggerOperation(Summary = "Update product")]
+        public async Task<IActionResult> UpdateProduct([FromRoute] int restaurantId, [FromRoute] int id, [FromBody] UpdateProductDto dto)
+        {
+            await _productService.UpdateDetailsAsync(restaurantId, id, dto);
+            return NoContent();
+        }
+
         [HttpDelete("{productId}")]
         [SwaggerOperation(Summary = "Delete product")]
         public async Task<IActionResult> DeleteProduct([FromRoute] int restaurantId, [FromRoute] int productId)
@@ -55,6 +63,8 @@ namespace WebAPI.Controllers
         }
 
 
+
+
         [HttpPost("{productId}/ingredients")]
         [SwaggerOperation(Summary = "Add ingredient to specific product")]
         public async Task<IActionResult> AddIngredientProduct([FromRoute] int restaurantId, [FromRoute] int productId, [FromBody] AddIngredientToProductDto dto)
@@ -62,6 +72,7 @@ namespace WebAPI.Controllers
             var addedIngredient = await _productService.AddIngredientToProductAsync(restaurantId, productId, dto);
             return Ok(addedIngredient);
         }
+
 
 
 

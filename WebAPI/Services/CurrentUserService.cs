@@ -32,5 +32,15 @@ namespace Infrastructure.Services
                 return null;
             }
         }
+
+        public int getRestaurantIdOrThrow()
+        {
+            return RestaurantId ?? throw new UnauthorizedAccessException("Brak zalogowanej restauracji");
+        }
+
+        public string GetUserIdOrThrow()
+        {
+            return UserId ?? throw new UnauthorizedAccessException("Użytkownik nie jest zalogowany");
+        }
     }
 }

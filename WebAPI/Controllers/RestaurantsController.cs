@@ -2,6 +2,7 @@
 using Application.Features.Restaurants.Dtos.Commands;
 using Application.Features.StaffManagement.Dtos.Commands;
 using Application.Interfaces;
+using Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -14,18 +15,20 @@ namespace WebAPI.Controllers
     public class RestaurantsController : ControllerBase
     {
         private readonly IRestaurantService _restaurantService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public RestaurantsController(IRestaurantService restaurantService)
+        public RestaurantsController(IRestaurantService restaurantService, ICurrentUserService currentUserService)
         {
             _restaurantService = restaurantService;
+            _currentUserService = currentUserService;
         }
 
         [HttpGet("{id}")]
         [AllowAnonymous]
         [SwaggerOperation(Summary = "Get restaurant by ID")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var restaurantDto = await _restaurantService.GetByIdAsync(id);
+            var restaurantDto = await _restaurantService.FindByIdOrThrowAsync(id);
             return Ok(restaurantDto);
         }
 
@@ -35,7 +38,7 @@ namespace WebAPI.Controllers
         [ProducesResponseType(400)]
         public async Task<IActionResult> Create([FromBody] CreateRestaurantDto dto)
         {
-            var creatorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var creatorUserId = _currentUserService.GetUserIdOrThrow();
 
             var restaurantId = await _restaurantService.CreateAsync(dto, creatorUserId);
 

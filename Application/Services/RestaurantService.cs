@@ -26,7 +26,6 @@ namespace Application.Services
         private readonly IStaffAssignmentRepository _staffAssignmentRepository;
         private readonly IUserService _userService;
         private readonly IStaffManagementService _staffManagementService;
-        private readonly IRestaurantService restaurantService;
 
         public RestaurantService(
             IStaffManagementService staffManagementService,

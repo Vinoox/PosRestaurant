@@ -14,15 +14,15 @@ namespace Application.Features.Products.Dtos.Validators
         {
             RuleFor(x => x.IngredientId)
                 .GreaterThan(0)
-                .WithMessage("Id składnika musi być dodatnie.");
+                .WithMessage("Niepoprawne ID składnika");
 
             RuleFor(x => x.Amount)
-                .GreaterThan(0)
-                .WithMessage("Ilość musi być dodatnia");
+                .GreaterThanOrEqualTo(0)
+                .WithMessage("Ilość nie może być ujemna");
 
             RuleFor(x => x.Unit)
                 .IsInEnum()
-                .WithMessage("Podano nieprawidłową jednostkę");
+                .WithMessage("Niepoprawna jednostka");
         }
     }
 }

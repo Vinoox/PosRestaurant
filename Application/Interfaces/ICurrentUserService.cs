@@ -10,5 +10,8 @@ namespace Domain.Interfaces
     {
         string? UserId { get; }
         int? RestaurantId { get; }
+
+        string GetUserIdOrThrow();
+        int getRestaurantIdOrThrow();
     }
 }

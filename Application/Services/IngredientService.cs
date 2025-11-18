@@ -50,42 +50,23 @@ namespace Application.Services
 
         public async Task<int> CreateAsync(int restaurantId, CreateIngredientDto dto)
         {
-            await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                var existingIngredient = await _ingredientRepository.GetByNameAsync(restaurantId, dto.Name);
-                if (existingIngredient != null)
-                    throw new BadRequestException($"Ingredient with name '{dto.Name}' already exists in this restaurant.");
+            var existingIngredient = await _ingredientRepository.GetByNameAsync(restaurantId, dto.Name);
+            if (existingIngredient != null)
+                throw new BadRequestException($"Ingredient with name '{dto.Name}' already exists in this restaurant.");
 
 
-                var ingredient = Ingredient.Create(dto.Name, dto.Unit, restaurantId);
-                _ingredientRepository.Add(ingredient);
+            var ingredient = Ingredient.Create(dto.Name, dto.Unit, restaurantId);
+            _ingredientRepository.Add(ingredient);
 
-                await _unitOfWork.CommitTransactionAsync();
-                return ingredient.Id;
-            }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            await _unitOfWork.CommitTransactionAsync();
+            return ingredient.Id;
         }
 
         public async Task DeleteAsync(int restaurantId, int id)
         {
-            await _unitOfWork.BeginTransactionAsync();
-
-            try
-            {
-                var ingredientToDelete = await FindByIdOrThrowAsync(restaurantId, id);
-                _ingredientRepository.Delete(ingredientToDelete);
-                await _unitOfWork.CommitTransactionAsync();
-            }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            var ingredientToDelete = await FindByIdOrThrowAsync(restaurantId, id);
+            _ingredientRepository.Delete(ingredientToDelete);
+            await _unitOfWork.CommitTransactionAsync();
         }
 
 

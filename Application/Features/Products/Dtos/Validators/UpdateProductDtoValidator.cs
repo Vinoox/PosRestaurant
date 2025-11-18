@@ -17,19 +17,20 @@ namespace Application.Features.Products.Validators
             When(dto => dto.Description != null, () =>
             {
                 RuleFor(dto => dto.Description)
+                    .NotEmpty().WithMessage("Opis produktu nie może być pusty.")
                     .MaximumLength(500).WithMessage("Opis nie może być dłuższy niż 500 znaków.");
             });
 
             When(dto => dto.Price.HasValue, () =>
             {
                 RuleFor(dto => dto.Price)
-                    .GreaterThan(0).WithMessage("Cena musi być większa od zera.");
+                    .GreaterThanOrEqualTo(0).WithMessage("Cena nie może być ujemna");
             });
 
             When(dto => dto.CategoryId.HasValue, () =>
             {
                 RuleFor(dto => dto.CategoryId)
-                    .GreaterThan(0).WithMessage("ID kategorii musi być poprawną liczbą.");
+                    .GreaterThan(0).WithMessage("Niepoprawne Id kategorii");
             });
         }
     }
