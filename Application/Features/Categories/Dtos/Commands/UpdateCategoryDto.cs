@@ -11,7 +11,6 @@ namespace Application.Features.Categories.Dtos.Commands
 {
     public class UpdateCategoryDto
     {
-        public required string OldName { get; set; }
-        public required string NewName { get; set; }
+        public required string Name { get; set; }
     }
 }

@@ -12,9 +12,9 @@ namespace Application.Features.Categories.Dtos.Validators
     {
         public UpdateCategoryValidator()
         {
-            When(dto => !string.IsNullOrEmpty(dto.NewName), () =>
+            When(dto => !string.IsNullOrEmpty(dto.Name), () =>
             {
-                RuleFor(dto => dto.NewName)
+                RuleFor(dto => dto.Name)
                     .NotEmpty().WithMessage("Nazwa kategorii jest wymagana.")
                     .MaximumLength(100).WithMessage("Nazwa kategorii nie może przekraczać 100 znaków.");
             });

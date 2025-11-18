@@ -1,5 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using System.Net;
+using System.Security;
 using System.Text.Json;
 
 namespace WebAPI.Middleware
@@ -50,6 +51,11 @@ namespace WebAPI.Middleware
 
                 case UnauthorizedAccessException:
                     statusCode = HttpStatusCode.Unauthorized; // 401
+                    message = exception.Message;
+                    break;
+
+                case SecurityException:
+                    statusCode = HttpStatusCode.Forbidden; //403
                     message = exception.Message;
                     break;
 

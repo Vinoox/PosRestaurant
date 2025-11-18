@@ -84,7 +84,7 @@ if (app.Environment.IsDevelopment())
     // === U¯YJ SWAGGERA (Koniec) ===
 }
 
-// Ten blok jest na swoim miejscu - obs³uguje b³êdy w œrodowisku produkcyjnym.
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");

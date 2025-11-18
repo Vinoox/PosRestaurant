@@ -11,21 +11,29 @@ namespace Domain.Entities
     public class Restaurant : AuditableEntity
     {
         public string Name { get; private set; } = null!;
-        public ICollection<Category> Categories { get; private set; } = new List<Category>();
-        public ICollection<Product> Products { get; private set; } = new List<Product>();
-        public ICollection<Ingredient> Ingredients { get; private set; } = new List<Ingredient>();
-        public ICollection<StaffAssignment> StaffAssignments { get;  set; } = new List<StaffAssignment>();
+        private readonly List<Category> _categories = new();
+        public virtual IReadOnlyCollection<Category> Categories => _categories.AsReadOnly();
 
-        //public ICollection<Order> Orders { get; set; } = new List<Order>();
 
-        private Restaurant()
-        {
-        }
+        private readonly List<Product> _products = new();
+        public virtual IReadOnlyCollection<Product> Products => _products.AsReadOnly();
+
+
+        private readonly List<Ingredient> _ingredients = new();
+        public virtual IReadOnlyCollection<Ingredient> Ingredients => _ingredients.AsReadOnly();
+
+
+        private readonly List<StaffAssignment> _staffAssignments = new();
+        public virtual IReadOnlyCollection<StaffAssignment> StaffAssignments => _staffAssignments.AsReadOnly();
+
+         //private readonly List<Order> _orders = new();
+         //public virtual IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
+        private Restaurant(){}
 
        public static Restaurant Create(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Restaurant name cannot be empty.", nameof(name));
+                throw new DomainException("Nazwa nie może być pusta");
             
             return new Restaurant
             {
@@ -33,11 +41,12 @@ namespace Domain.Entities
             };
         }
 
-        public void UpdateName(string name)
+        public void UpdateName(string newName)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Restaurant name cannot be empty.", nameof(name));
-            Name = name.Trim();
+            if (string.IsNullOrWhiteSpace(newName))
+                throw new DomainException("Nazwa nie może być pusta");
+
+            Name = newName.Trim();
         }
     }
 }

@@ -77,7 +77,7 @@ namespace Application.Services
             {
                 var categoryToUpdate = await FindByIdOrThrowAsync(resturantId, id);
 
-                categoryToUpdate.UpdateName(dto.NewName);
+                categoryToUpdate.UpdateName(dto.Name);
 
                _categoryRepository.Update(categoryToUpdate);
                 await _unitOfWork.CommitTransactionAsync();

@@ -55,10 +55,9 @@ namespace WebAPI.Controllers
         }
 
 
-
         [HttpPost("{productId}/ingredients")]
         [SwaggerOperation(Summary = "Add ingredient to specific product")]
-        public async Task<IActionResult> AddIngredientProduct([FromRoute] int restaurantId, [FromRoute] int productId, AddIngredientToProductDto dto)
+        public async Task<IActionResult> AddIngredientProduct([FromRoute] int restaurantId, [FromRoute] int productId, [FromBody] AddIngredientToProductDto dto)
         {
             var addedIngredient = await _productService.AddIngredientToProductAsync(restaurantId, productId, dto);
             return Ok(addedIngredient);

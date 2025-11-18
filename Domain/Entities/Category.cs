@@ -10,19 +10,20 @@ namespace Domain.Entities
     public class Category : AuditableEntity, ITenantEntity
     {
         public string Name { get; private set; } = null!;
-        public int RestaurantId { get; set; }
-        public Restaurant Restaurant { get; private set; } = null!;
-        public ICollection<Product> Products { get; private set; } = new List<Product>();
+        public int RestaurantId { get; private set; }
+        public virtual Restaurant Restaurant { get; private set; } = null!;
 
-        private Category() 
-        {
-        }
+        private readonly List<Product> _products = new();
+        public virtual IReadOnlyCollection<Product> Products => _products.AsReadOnly();
+
+        int ITenantEntity.RestaurantId { get => RestaurantId; set => RestaurantId = value; }
+
+        private Category() {}
 
         public static Category Create(string name, int restaurantId)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Category name cannot be empty.", nameof(name));
-            
+                throw new DomainException("Nazwa kategorii nie może być pusta.");
             return new Category
             {
                 Name = name.Trim(),
@@ -32,10 +33,10 @@ namespace Domain.Entities
 
         public void UpdateName(string newName)
         {
-            if (!string.IsNullOrWhiteSpace(newName))
-                throw new ArgumentException("Nazwa kategorii nie może być pusta.", nameof(newName));
+            if (string.IsNullOrWhiteSpace(newName))
+                throw new DomainException("Nowa nazwa nie może być pusta.");
 
-            Name = newName;
+            Name = newName.Trim();
         }
     }
 }

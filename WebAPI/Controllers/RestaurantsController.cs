@@ -14,7 +14,7 @@ namespace WebAPI.Controllers
     public class RestaurantsController : ControllerBase
     {
         private readonly IRestaurantService _restaurantService;
-    
+
         public RestaurantsController(IRestaurantService restaurantService)
         {
             _restaurantService = restaurantService;
@@ -25,19 +25,15 @@ namespace WebAPI.Controllers
         [SwaggerOperation(Summary = "Get restaurant by ID")]
         public async Task<IActionResult> GetById(int id)
         {
-            var restaurant = await _restaurantService.GetByIdAsync(id);
-            if (restaurant == null)
-            {
-                return NotFound();
-            }
-            return Ok(restaurant);
+            var restaurantDto = await _restaurantService.GetByIdAsync(id);
+            return Ok(restaurantDto);
         }
 
         [HttpPost]
         [SwaggerOperation(Summary = "Create a new restaurant")]
         [ProducesResponseType(typeof(object), 201)]
         [ProducesResponseType(400)]
-        public async Task<IActionResult> Create(CreateRestaurantDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateRestaurantDto dto)
         {
             var creatorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 

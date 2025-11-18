@@ -11,11 +11,10 @@ namespace Domain.Entities
     public class ProductIngredient
     {
         public int ProductId { get; private set; }
-        public Product Product { get; private set; }
-
+        public Product Product { get; private set; } = null!;
 
         public int IngredientId { get; private set; }
-        public Ingredient Ingredient { get; private set; }
+        public Ingredient Ingredient { get; private set; } = null!;
 
         public decimal Amount { get; private set; }
         public Unit Unit { get; private set; }
@@ -24,8 +23,8 @@ namespace Domain.Entities
 
         public ProductIngredient(int productId, int ingredientId, decimal amount, Unit unit)
         {
-            if (amount <= 0)
-                throw new DomainException("Ilość składnika musi być dodatania");
+            if (amount < 0)
+                throw new DomainException("Ilość składnika nie może być ujemna");
 
             ProductId = productId;
             IngredientId = ingredientId;
@@ -33,12 +32,19 @@ namespace Domain.Entities
             Unit = unit;
         }
 
-        public void UpdateAmount(decimal newAmount, Unit newUnit)
+        public void UpdateAmount(decimal newAmount)
         {
-            if (newAmount <= 0)
-                throw new DomainException("Ilość skłądnika musi być dodatnia");
+            if (newAmount < 0)
+                throw new DomainException("Ilość składnika nie może być ujemna");
 
             Amount = newAmount;
+        }
+
+        public void UpdateUnit(Unit newUnit)
+        {
+            if (!Enum.IsDefined(typeof(Unit), newUnit))
+                throw new DomainException("Niepoprawna jednostka");
+
             Unit = newUnit;
         }
     }

@@ -17,7 +17,7 @@ namespace Infrastructure.Data
         {
             _currentUserService = currentUserService;
         }
-        
+
         public DbSet<Restaurant> Restaurants { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
@@ -35,12 +35,12 @@ namespace Infrastructure.Data
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.Property(p => p.Price).HasColumnType("decimal(18, 2)");
-                
+
                 entity.HasOne(p => p.Restaurant)
                       .WithMany(r => r.Products)
                       .HasForeignKey(p => p.RestaurantId)
                       .OnDelete(DeleteBehavior.Restrict);
-            
+
                 entity.HasOne(p => p.Category)
                       .WithMany(c => c.Products)
                       .HasForeignKey(p => p.CategoryId)

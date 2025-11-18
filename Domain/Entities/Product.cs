@@ -10,7 +10,7 @@ namespace Domain.Entities
 {
     public class Product : AuditableEntity, ITenantEntity
     {
-        public string Name { get; private set; }
+        public string Name { get; private set; } = null!;
 
         public string? Description { get; private set; }
 
@@ -21,8 +21,9 @@ namespace Domain.Entities
 
         private readonly List<ProductIngredient> _productIngredients = new();
         public IReadOnlyCollection<ProductIngredient> ProductIngredients => _productIngredients.AsReadOnly();
-        public int RestaurantId { get; set; }
+        public int RestaurantId { get; private set; }
         public Restaurant Restaurant { get; private set; } = null!;
+        int ITenantEntity.RestaurantId { get => RestaurantId; set => RestaurantId = value; }
 
         private Product()
         {
@@ -32,17 +33,17 @@ namespace Domain.Entities
         {
             if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentException("Product name cannot be empty.", nameof(name));
+                throw new DomainException("Nazwa nie może być pusta");
             }
 
             if (price < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(price), "Product price must be greater than zero.");
+                throw new DomainException("Cena nie może być ujemna");
             }
 
             if (categoryId <= 0)
             {
-                throw new ArgumentException(nameof(CategoryId), "Category ID must be greater than zero.");
+                throw new DomainException("Niepoprawne ID kategorii");
             }
 
             return new Product
@@ -55,44 +56,37 @@ namespace Domain.Entities
             };
         }
 
-        //public void Update(ProductUpdateParams parameters)
-        //{
-        //    if (!string.IsNullOrWhiteSpace(parameters.Name))
-        //        Name = parameters.Name;
+        public void UpdateName(string newName)
+        {
+            if(string.IsNullOrWhiteSpace(newName))
+                throw new DomainException("Nazwa nie może być pusta");
 
-        //    Description = parameters.Description ?? Description;
+            Name = newName;
+        }
 
-        //    if (parameters.Price.HasValue)
-        //        UpdatePrice(parameters.Price.Value);
+        public void UpdateCategory(int categoryId)
+        {
+            if (categoryId <= 0)
+                throw new DomainException("Niepoprawne ID kategorii");
 
-        //    if (parameters.CategoryId.HasValue)
-        //        ChangeCategory(parameters.CategoryId.Value);
-        //}
+            CategoryId = categoryId;
+        }
 
-        //public void UpdatePrice(decimal newPrice)
-        //{
-        //    if (newPrice <= 0)
-        //        throw new ArgumentOutOfRangeException(nameof(newPrice), "Product price must be greater than zero.");
+        public void UpdatePrice(decimal price)
+        {
+            if (price < 0)
+                throw new DomainException("Cena nie może być ujemna");
 
-        //    Price = newPrice;
-        //}
-
-        //public void ChangeCategory(int newCategoryId)
-        //{
-        //    if (newCategoryId <= 0)
-        //    {
-        //        throw new ArgumentOutOfRangeException(nameof(newCategoryId), "Category ID must be greater than zero.");
-        //    }
-        //    CategoryId = newCategoryId;
-        //}
+            Price = price;
+        }
 
         public ProductIngredient AddIngredient(Ingredient ingredient, decimal amount, Unit unit)
         {
             if (_productIngredients.Any(pi => pi.IngredientId == ingredient.Id))
                 throw new DomainException($"Składnik '{ingredient.Name}' jest już dodany do tego produktu.");
 
-            if (amount <= 0)
-                throw new DomainException("Ilość składnika musi być dodatnia.");
+            if (amount < 0)
+                throw new DomainException("Ilość składnika nie może być ujemna");
 
             var newProductIngredient = new ProductIngredient(this.Id, ingredient.Id, amount, unit);
 
@@ -103,13 +97,8 @@ namespace Domain.Entities
 
         public void RemoveIngredient(int ingredientId)
         {
-            if (ingredientId <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(ingredientId), "Ingredient ID must be greater than zero.");
-            }
-
-            var ingredient = _productIngredients.FirstOrDefault(pi => pi.IngredientId == ingredientId) ?? throw new InvalidOperationException("Ingredient not found in the product.");
-            _productIngredients.Remove(ingredient);
+            var ingredientLink = GetIngredientLinkOrThrow(ingredientId);
+            _productIngredients.Remove(ingredientLink);
         }
 
         public void ClearIngredients()
@@ -117,30 +106,30 @@ namespace Domain.Entities
             _productIngredients.Clear();
         }
 
-        //    public void UpdateIngredientQuantity(int ingredientId, int newQuantity)
-        //    {
-        //        if (newQuantity <= 0)
-        //        {
-        //            throw new ArgumentOutOfRangeException(nameof(newQuantity), "Quantity must be greater than zero.");
-        //        }
-
-        //        if (ingredientId <= 0)
-        //        {
-        //            throw new ArgumentOutOfRangeException(nameof(ingredientId), "Ingredient ID must be greater than zero.");
-        //        }
-
-        //        var ingredient = _productIngredients.FirstOrDefault(pi => pi.IngredientId == ingredientId) ?? throw new InvalidOperationException("Ingredient not found in the product.");
-        //        ingredient.Amount = newQuantity;
-        //    }
-        //}
-
-
-        public class ProductUpdateParams
+        public void UpdateIngredientAmount(int ingredientId, decimal newAmount)
         {
-            public string Name { get; set; }
-            public string Description { get; set; }
-            public decimal Price { get; set; }
-            public int CategoryId { get; set; }
+            var ingredientLink = GetIngredientLinkOrThrow(ingredientId);
+            ingredientLink.UpdateAmount(newAmount);
+        }
+
+        public void UpdateIngredientUnit(int ingredientId, Unit newUnit)
+        {
+            var ingredientLink = GetIngredientLinkOrThrow(ingredientId);
+            ingredientLink.UpdateUnit(newUnit);
+        }
+
+
+        private ProductIngredient GetIngredientLinkOrThrow(int ingredientId)
+        {
+            if (ingredientId <= 0)
+                throw new DomainException("Niepoprawne ID składnika");
+
+            var link = _productIngredients.FirstOrDefault(pi => pi.IngredientId == ingredientId);
+
+            if (link == null)
+                throw new DomainException("Składni nie występuje w tym produkcie");
+
+            return link;
         }
     }
 }

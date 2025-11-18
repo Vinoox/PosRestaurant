@@ -60,14 +60,14 @@ namespace Application.Services
 
                 var ingredient = Ingredient.Create(dto.Name, dto.Unit, restaurantId);
                 _ingredientRepository.Add(ingredient);
-                
+
                 await _unitOfWork.CommitTransactionAsync();
                 return ingredient.Id;
             }
             catch (Exception)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw; 
+                throw;
             }
         }
 
