@@ -10,13 +10,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class CategoryRepository : ICategoryRepository
+    public class CategoryRepository : GenericRepository<Category>, ICategoryRepository
     {
-        private readonly PosRestaurantContext _context;
-
-        public CategoryRepository(PosRestaurantContext context)
+        public CategoryRepository(PosRestaurantContext context) : base(context)
         {
-            _context = context;
         }
 
         public async Task<IEnumerable<Category>> GetAllByRestaurantIdAsync(int restaurantId)
@@ -39,21 +36,6 @@ namespace Infrastructure.Repositories
             return await _context.Categories
                 .Where(c => c.RestaurantId == restaurantId)
                 .FirstOrDefaultAsync(c => c.Name.ToLower() == normalizedName);
-        }
-
-        public void Add(Category category)
-        {
-            _context.Categories.Add(category);
-        }
-
-        public void Delete(Category category)
-        {
-            _context.Categories.Remove(category);
-        }
-
-        public void Update(Category category)
-        {
-            _context.Categories.Update(category);
         }
     }
 }

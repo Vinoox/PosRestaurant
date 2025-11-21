@@ -18,7 +18,7 @@ namespace Application.Interfaces
         Task ChangePinAsync(string userId, ChangePinDto dto);
         Task DeleteAsync(string userId);
         Task<UserDto?> GetByIdAsync(string userId);
-        Task<IEnumerable<UserDto>> GetAllUsersAsync();
+        IEnumerable<UserDto> GetAllUsers();
         Task<User> FindByEmailOrThrowAsync(string email);
         Task<User> FindByIdOrThrowAsync(string userId);
     }

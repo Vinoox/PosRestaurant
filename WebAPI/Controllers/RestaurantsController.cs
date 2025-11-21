@@ -28,7 +28,7 @@ namespace WebAPI.Controllers
         [SwaggerOperation(Summary = "Get restaurant by ID")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var restaurantDto = await _restaurantService.FindByIdOrThrowAsync(id);
+            var restaurantDto = await _restaurantService.GetByIdAsync(id);
             return Ok(restaurantDto);
         }
 

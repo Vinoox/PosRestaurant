@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using WebAPI.Filters;
 using WebAPI.Middleware;
 
 namespace WebAPI.Installers
@@ -63,6 +64,7 @@ namespace WebAPI.Installers
 
             services.AddHttpContextAccessor(); // Ważne!
             services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<ValidateRestaurantAccessFilter>();
 
 
             services.AddApplication();

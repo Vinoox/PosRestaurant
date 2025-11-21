@@ -125,15 +125,7 @@ namespace Application.Services
             var product = await FindByIdOrThrowAsync(restaurantId, productId);
             var ingredient = await _ingredientService.FindByIdOrThrowAsync(restaurantId, dto.IngredientId);
 
-            ProductIngredient productIngredient;
-            try
-            {
-                productIngredient = product.AddIngredient(ingredient, dto.Amount, dto.Unit);
-            }
-            catch (DomainException ex)
-            {
-                throw new BadRequestException(ex.Message);
-            }
+            ProductIngredient productIngredient = product.AddIngredient(ingredient, dto.Amount, dto.Unit);
 
             await _unitOfWork.CommitTransactionAsync();
             return _mapper.Map<ProductIngredientDto>(productIngredient);
@@ -144,14 +136,8 @@ namespace Application.Services
             var product = await _productRepository.GetByIdWithIngredientsAsync(restaurantId, productId)
                 ??throw new NotFoundException($"Produkt o ID {productId} nie został znaleziony.");
 
-            try
-            {
-                product.RemoveIngredient(ingredientId);
-            }
-            catch (DomainException ex)
-            {
-                throw new BadRequestException(ex.Message);
-            }
+            product.RemoveIngredient(ingredientId);
+
 
             await _unitOfWork.CommitTransactionAsync();
         }
@@ -161,14 +147,8 @@ namespace Application.Services
             var product = await _productRepository.GetByIdWithIngredientsAsync(restaurantId, productId)
                 ??throw new NotFoundException($"Produkt o ID {productId} nie został znaleziony.");
 
-            try
-            {
-                product.UpdateIngredientAmount(ingredientId, newAmount);
-            }
-            catch (DomainException ex)
-            {
-                throw new BadRequestException(ex.Message);
-            }
+            product.UpdateIngredientAmount(ingredientId, newAmount);
+
 
             await _unitOfWork.CommitTransactionAsync();
         }

@@ -7,10 +7,9 @@ using Domain.Entities;
 
 namespace Domain.Interfaces
 {
-    public interface IRestaurantRepository
+    public interface IRestaurantRepository : IGenericRepository<Restaurant>
     {
         Task<Restaurant?> GetByIdAsync(int id);
-        void CreateAsync(Restaurant restaurant);
         Task<IEnumerable<Restaurant>> FindByUserIdAsync(string userId);
         Task<int> CountByIdAndRoleNameAsync(int id, string roleName);
     }

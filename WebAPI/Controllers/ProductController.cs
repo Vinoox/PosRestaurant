@@ -5,13 +5,17 @@ using Application.Features.Products.Dtos;
 using Application.Features.Products.Dtos.Commands;
 using Application.Interfaces;
 using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using WebAPI.Filters;
 
 namespace WebAPI.Controllers
 {
     [Route("api/restaurants/{restaurantId}/products")]
     [ApiController]
+    [Authorize]
+    [ServiceFilter(typeof(ValidateRestaurantAccessFilter))]
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;

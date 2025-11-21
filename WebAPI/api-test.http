@@ -1,0 +1,132 @@
+﻿@host = https://localhost:7283
+@email = adek.labaj@wp.pl
+@password = Test123-
+@pin = 1234
+
+# ==========================================
+# 1. REJESTRACJA I LOGOWANIE
+# ==========================================
+
+### 1. Rejestracja użytkownika
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "firstName": "Jan",
+  "lastName": "Kowalski",
+  "pin": "{{pin}}"
+}
+
+### 2. Logowanie (Pobranie tokenu Lobby)
+# @name login
+POST {{host}}/api/auth/authenticate
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Zmienne z logowania
+@authToken = {{login.response.body.authenticationToken}}
+@userId = {{login.response.body.userId}}
+
+# ==========================================
+# 2. TWORZENIE RESTAURACJI
+# ==========================================
+
+### 3. Utwórz restaurację (Wymaga tokenu Lobby)
+# @name createRestaurant
+POST {{host}}/api/restaurants
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Włoska Pizzeria"
+}
+
+### Zmienne restauracji
+@restaurantId = {{createRestaurant.response.body.id}}
+
+# ==========================================
+# 3. WYBÓR KONTEKSTU (ZALOGOWANIE DO RESTAURACJI)
+# ==========================================
+
+### 4. Wybierz restaurację (Pobranie tokenu Kontekstowego)
+# @name selectContext
+POST {{host}}/api/auth/select-restaurant
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "restaurantId": {{restaurantId}}
+}
+
+### Finalny token do pracy
+@contextToken = {{selectContext.response.body.token}}
+
+
+# ==========================================
+# 4. ZARZĄDZANIE MENU (Wymaga tokenu Kontekstowego)
+# ==========================================
+
+### 5. Dodaj Kategorię
+# @name createCategory
+POST {{host}}/api/restaurants/{{restaurantId}}/categories
+Content-Type: application/json
+Authorization: Bearer {{contextToken}}
+
+{
+  "name": "Dania Główne"
+}
+
+@categoryId = {{createCategory.response.body}}
+
+### 6. Dodaj Składnik (Magazyn)
+# @name createIngredient
+POST {{host}}/api/restaurants/{{restaurantId}}/ingredients
+Content-Type: application/json
+Authorization: Bearer {{contextToken}}
+
+{
+  "name": "Mąka Pszenna",
+  "unit": "Kg"
+}
+
+@ingredientId = {{createIngredient.response.body}}
+
+### 7. Dodaj Produkt
+# @name createProduct
+POST {{host}}/api/restaurants/{{restaurantId}}/products
+Content-Type: application/json
+Authorization: Bearer {{contextToken}}
+
+{
+  "name": "Pizza Margherita",
+  "description": "Klasyczna pizza z sosem pomidorowym",
+  "price": 25.00,
+  "categoryId": {{categoryId}}
+}
+
+@productId = {{createProduct.response.body.id}}
+
+# ==========================================
+# 5. RECEPTURA
+# ==========================================
+
+### 8. Dodaj składnik do produktu (Przepis)
+POST {{host}}/api/restaurants/{{restaurantId}}/products/{{productId}}/ingredients
+Content-Type: application/json
+Authorization: Bearer {{contextToken}}
+
+{
+  "ingredientId": {{ingredientId}},
+  "amount": 0.25,
+  "unit": "Kg"
+}
+
+### 9. Pobierz szczegóły produktu (Sprawdź czy składnik jest)
+GET {{host}}/api/restaurants/{{restaurantId}}/products/{{productId}}
+Authorization: Bearer {{contextToken}}

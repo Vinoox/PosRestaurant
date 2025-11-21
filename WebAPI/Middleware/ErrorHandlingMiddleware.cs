@@ -1,7 +1,11 @@
-﻿using Application.Common.Exceptions;
-using System.Net;
+﻿using System.Net;
+using System.Runtime.Intrinsics.Arm;
 using System.Security;
 using System.Text.Json;
+using Application.Common.Exceptions;
+using Domain.Common;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Middleware
 {
@@ -22,54 +26,55 @@ namespace WebAPI.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Wystąpił błąd podczas przetwarzania żądania.");
+                _logger.LogError(ex, "Nieobsłużony wyjątek: {Message}", ex.Message);
                 await HandleExceptionAsync(context, ex);
             }
         }
 
         private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            HttpStatusCode statusCode;
-            string message;
+            var (statusCode, title, detail) = MapExceptionToResponse(exception);
 
-            switch (exception)
+            var problemDetails = new ProblemDetails
             {
-                case NotFoundException:
-                    statusCode = HttpStatusCode.NotFound; // 404
-                    message = exception.Message;
-                    break;
+                Status = (int)statusCode,
+                Title = title,
+                Detail = detail,
+                Type = $"https://httpstatuses.com/{(int)statusCode}",
+                Instance = context.Request.Path
+            };
 
-                case InvalidOperationException:
-                    statusCode = HttpStatusCode.BadRequest; // 400
-                    message = exception.Message;
-                    break;
-
-                case BadRequestException:
-                    statusCode = HttpStatusCode.BadRequest; // 400
-                    message = exception.Message;
-                    break;
-
-                case UnauthorizedAccessException:
-                    statusCode = HttpStatusCode.Unauthorized; // 401
-                    message = exception.Message;
-                    break;
-
-                case SecurityException:
-                    statusCode = HttpStatusCode.Forbidden; //403
-                    message = exception.Message;
-                    break;
-
-                default:
-                    statusCode = HttpStatusCode.InternalServerError; // 500
-                    message = "Wystąpił wewnętrzny błąd serwera. Skontaktuj się z administratorem.";
-                    break;
-            }
-
-            context.Response.ContentType = "application/json";
+            context.Response.ContentType = "application/problem+json";
             context.Response.StatusCode = (int)statusCode;
 
-            var result = JsonSerializer.Serialize(new { error = message });
+            var result = JsonSerializer.Serialize(problemDetails);
             await context.Response.WriteAsync(result);
+        }
+
+        private static (HttpStatusCode statusCode, string title, string detail) MapExceptionToResponse(Exception exception)
+        {
+            return exception switch
+            {
+                DomainException ex =>
+                    (HttpStatusCode.BadRequest, "Naruszenie reguł domeny", ex.Message),
+
+                BadRequestException ex =>
+                    (HttpStatusCode.BadRequest, "Nieprawidłowe żądanie", ex.Message),
+
+                NotFoundException ex =>
+                    (HttpStatusCode.NotFound, "Zasób nie znaleziony", ex.Message),
+
+                ValidationException ex =>
+                    (HttpStatusCode.BadRequest, "Błąd walidacji", "Wystąpiły błędy walidacji danych."),
+
+                UnauthorizedAccessException ex =>
+                    (HttpStatusCode.Unauthorized, "Brak dostępu", ex.Message),
+
+                System.Security.SecurityException ex =>
+                    (HttpStatusCode.Forbidden, "Zabroniona operacja", "Nie masz uprawnień do wykonania tej operacji na tym zasobie."),
+
+                _ => (HttpStatusCode.InternalServerError, "Błąd serwera", "Wystąpił nieoczekiwany błąd.")
+            };
         }
     }
 }

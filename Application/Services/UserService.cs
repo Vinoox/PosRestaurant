@@ -110,7 +110,7 @@ namespace Application.Services
             return _mapper.Map<UserDto>(user);
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public IEnumerable<UserDto> GetAllUsers()
         {
             var users = _userManager.Users.ToList();
 

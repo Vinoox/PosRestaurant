@@ -64,8 +64,8 @@ namespace Application.Services
 
         public async Task DeleteAsync(int restaurantId, int id)
         {
-            var ingredientToDelete = await FindByIdOrThrowAsync(restaurantId, id);
-            _ingredientRepository.Delete(ingredientToDelete);
+            var ingredientToRemove = await FindByIdOrThrowAsync(restaurantId, id);
+            _ingredientRepository.Remove(ingredientToRemove);
             await _unitOfWork.CommitTransactionAsync();
         }
 

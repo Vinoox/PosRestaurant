@@ -56,7 +56,7 @@ namespace Application.Services
                 var creatorUser = await _userService.FindByIdOrThrowAsync(creatorUserId);
                 var restaurant = Restaurant.Create(dto.Name);
 
-                _restaurantRepository.CreateAsync(restaurant);
+                _restaurantRepository.Add(restaurant);
                 await _staffManagementService.AddInitialMemberAsync(restaurant, creatorUser);
                 await _unitOfWork.CommitTransactionAsync();
                 return restaurant.Id;

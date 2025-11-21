@@ -10,13 +10,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class IngredientRepository : IIngredientRepository
+    public class IngredientRepository : GenericRepository<Ingredient>, IIngredientRepository
     {
-        private readonly PosRestaurantContext _context;
-
-        public IngredientRepository(PosRestaurantContext context)
+        public IngredientRepository(PosRestaurantContext context) : base(context)
         {
-            _context = context;
         }
 
         public async Task<IEnumerable<Ingredient>> GetAllAsync(int restaurantId)
@@ -48,15 +45,6 @@ namespace Infrastructure.Repositories
             return await _context.Ingredients
                 .Where(i => i.RestaurantId == restaurantId)
                 .FirstOrDefaultAsync(i => i.Name.ToLower() == normalizeName);
-        }
-        public void Add(Ingredient ingredient)
-        {
-            _context.Ingredients.Add(ingredient);
-        }
-
-        public void Delete(Ingredient ingredient)
-        {
-            _context.Ingredients.Remove(ingredient);
         }
     }
 }

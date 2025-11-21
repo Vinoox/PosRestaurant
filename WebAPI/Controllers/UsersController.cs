@@ -22,9 +22,9 @@ namespace WebAPI.Controllers
         [SwaggerOperation(Summary = "Get all users (Admin only)")]
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllUsers()
+        public IActionResult GetAllUsers()
         {
-            var users = await _userService.GetAllUsersAsync();
+            var users = _userService.GetAllUsers();
             return Ok(users);
         }
 

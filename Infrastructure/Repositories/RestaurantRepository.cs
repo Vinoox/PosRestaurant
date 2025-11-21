@@ -10,23 +10,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class RestaurantRepository : IRestaurantRepository
+    public class RestaurantRepository : GenericRepository<Restaurant>, IRestaurantRepository
     {
-        private readonly PosRestaurantContext _context;
-        public RestaurantRepository(PosRestaurantContext context)
+        public RestaurantRepository(PosRestaurantContext context) : base(context)
         {
-            _context = context;
-        }
-
-        public void CreateAsync(Restaurant restaurant)
-        {
-            _context.Restaurants.Add(restaurant);
         }
         public async Task<Restaurant?> GetByIdAsync(int id)
         {
             return await _context.Restaurants
                 .Include(r => r.StaffAssignments).ThenInclude(sa => sa.User)
                 .Include(r => r.StaffAssignments).ThenInclude(sa => sa.Role)
+                .Include(r => r.Categories).ThenInclude(c => c.Products).ThenInclude(p => p.ProductIngredients)
+                .Include(r => r.Ingredients)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == id);
         }

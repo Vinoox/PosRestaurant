@@ -10,12 +10,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
-    public class StaffAssignmentRepository : IStaffAssignmentRepository
+    public class StaffAssignmentRepository :GenericRepository<StaffAssignment> , IStaffAssignmentRepository
     {
-        private readonly PosRestaurantContext _context;
-        public StaffAssignmentRepository(PosRestaurantContext context)
+        public StaffAssignmentRepository(PosRestaurantContext context) : base(context)
         {
-            _context = context;
         }
         public async Task<StaffAssignment?> FindByUserIdAndRestaurantIdAsync(string userId, int restaurantId)
         {
@@ -31,16 +29,6 @@ namespace Infrastructure.Repositories
                 .Include(sa => sa.Role)
                 .Where(sa => sa.RestaurantId == restaurantId)
                 .ToListAsync();
-        }
-
-        public void Add(StaffAssignment staffAssignment)
-        {
-            _context.Entry(staffAssignment).State = EntityState.Added;
-        }
-
-        public void Remove(StaffAssignment staffAssignment)
-        {
-            _context.Entry(staffAssignment).State = EntityState.Deleted;
         }
     }
 }
