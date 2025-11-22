@@ -135,7 +135,9 @@ namespace Application.Services
         public async Task<ProductIngredientDto> AddIngredientToProductAsync(int restaurantId, int productId, AddIngredientToProductDto dto)
         {
             await _addIngredientToProductValidator.ValidateAndThrowAsync(dto);
-            var product = await FindByIdOrThrowAsync(restaurantId, productId);
+            var product = await _productRepository.GetByIdWithIngredientsAsync(restaurantId, productId)
+                ??throw new NotFoundException($"Produkt o ID {productId} nie został znaleziony.");
+
             var ingredient = await _ingredientService.FindByIdOrThrowAsync(restaurantId, dto.IngredientId);
 
             ProductIngredient productIngredient = product.AddIngredient(ingredient, dto.Amount, dto.Unit);
