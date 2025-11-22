@@ -1,7 +1,7 @@
-﻿using Application.Features.Users.Dtos.Commands;
+﻿using Application.Features.Auth.Commands;
 using FluentValidation;
 
-namespace Application.Features.Users.Dtos.Validators
+namespace Application.Features.Auth.Validators
 {
     public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
     {
@@ -20,7 +20,11 @@ namespace Application.Features.Users.Dtos.Validators
 
             RuleFor(dto => dto.Password)
                 .NotEmpty().WithMessage("Hasło jest wymagane.")
-                .MinimumLength(8).WithMessage("Hasło musi mieć co najmniej 8 znaków.");
+                .MinimumLength(8).WithMessage("Hasło musi mieć co najmniej 8 znaków.")
+                .Matches("[A-Z]").WithMessage("Hasło musi zawierać przynajmniej jedną wielką literę.")
+                .Matches("[a-z]").WithMessage("Hasło musi zawierać przynajmniej jedną małą literę.")
+                .Matches("[0-9]").WithMessage("Hasło musi zawierać przynajmniej jedną cyfrę.")
+                .Matches("[^a-zA-Z0-9]").WithMessage("Hasło musi zawierać przynajmniej jeden znak specjalny.");
 
             RuleFor(dto => dto.ConfirmPassword)
                 .NotEmpty().WithMessage("Potwierdzenie hasła jest wymagane.")

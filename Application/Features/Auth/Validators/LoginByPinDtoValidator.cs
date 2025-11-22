@@ -1,7 +1,7 @@
-﻿using Application.Features.Users.Dtos.Commands;
+﻿using Application.Features.Auth.Commands;
 using FluentValidation;
 
-namespace Application.Features.Users.Dtos.Validators
+namespace Application.Features.Auth.Validators
 {
     public class LoginByPinDtoValidator : AbstractValidator<LoginByPinDto>
     {

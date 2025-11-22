@@ -10,6 +10,7 @@ using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
+using FluentValidation;
 
 namespace Application.Services
 {
@@ -19,14 +20,21 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
 
+        private readonly IValidator<CreateIngredientDto> _createIngredientValidator;
+        private readonly IValidator<UpdateIngredientDto> _updateIngredientValidator;
+
         public IngredientService(
             IIngredientRepository ingredientRepository,
             IMapper mapper,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IValidator<UpdateIngredientDto> updateIngredientValidator,
+            IValidator<CreateIngredientDto> createIngredientValidator)
         {
             _ingredientRepository = ingredientRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _updateIngredientValidator = updateIngredientValidator;
+            _createIngredientValidator = createIngredientValidator;
         }
 
         public async Task<IEnumerable<IngredientDto>> GetAllAsync(int restaurantId)
@@ -50,6 +58,8 @@ namespace Application.Services
 
         public async Task<int> CreateAsync(int restaurantId, CreateIngredientDto dto)
         {
+            await _createIngredientValidator.ValidateAndThrowAsync(dto);
+
             var existingIngredient = await _ingredientRepository.GetByNameAsync(restaurantId, dto.Name);
             if (existingIngredient != null)
                 throw new BadRequestException($"Ingredient with name '{dto.Name}' already exists in this restaurant.");
@@ -72,6 +82,7 @@ namespace Application.Services
 
         public async Task UpdateAsync(int restaurantId, int id, UpdateIngredientDto dto)
         {
+            await _updateIngredientValidator.ValidateAndThrowAsync(dto);
             throw new NotImplementedException();
         }
 

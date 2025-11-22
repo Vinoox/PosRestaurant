@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Features.Users.Dtos.Commands
+namespace Application.Features.Auth.Commands
 {
     public class SelectRestaurantDto
     {
-        public int RestaurantId { get; set; }
+        public required int RestaurantId { get; set; }
     }
 }

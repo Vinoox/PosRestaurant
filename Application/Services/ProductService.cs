@@ -24,18 +24,28 @@ namespace Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IIngredientService _ingredientService;
 
+        private readonly IValidator<CreateProductDto> _createProductValidator;
+        private readonly IValidator<UpdateProductDto> _updateProductValidator;
+        private readonly IValidator<AddIngredientToProductDto> _addIngredientToProductValidator;
+
         public ProductService(
             IProductRepository productRepository,
             IMapper mapper,
             IUnitOfWork unitOfWork,
             ICategoryService categoryService,
-            IIngredientService ingredientService)
+            IIngredientService ingredientService,
+            IValidator<CreateProductDto> createProductValidator,
+            IValidator<UpdateProductDto> updateProductValidator,
+            IValidator<AddIngredientToProductDto> addIngredientToProductValidator)
         {
             _productRepository = productRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _categoryService = categoryService;
             _ingredientService = ingredientService;
+            _createProductValidator = createProductValidator;
+            _updateProductValidator = updateProductValidator;
+            _addIngredientToProductValidator = addIngredientToProductValidator;
         }
 
 
@@ -60,6 +70,7 @@ namespace Application.Services
 
         public async Task<int> CreateAsync(int restaurantId, CreateProductDto dto)
         {
+            await _createProductValidator.ValidateAndThrowAsync(dto);
             await _categoryService.FindByIdOrThrowAsync(restaurantId, dto.CategoryId);
 
             var existingProduct = await _productRepository.GetByNameAsync(restaurantId, dto.Name);
@@ -75,6 +86,7 @@ namespace Application.Services
 
         public async Task UpdateDetailsAsync(int restaurantId, int productId, UpdateProductDto dto)
         {
+            await _updateProductValidator.ValidateAndThrowAsync(dto);
             var productToUpdate = await FindByIdOrThrowAsync(restaurantId, productId);
 
             if(dto.Name != null)
@@ -122,6 +134,7 @@ namespace Application.Services
 
         public async Task<ProductIngredientDto> AddIngredientToProductAsync(int restaurantId, int productId, AddIngredientToProductDto dto)
         {
+            await _addIngredientToProductValidator.ValidateAndThrowAsync(dto);
             var product = await FindByIdOrThrowAsync(restaurantId, productId);
             var ingredient = await _ingredientService.FindByIdOrThrowAsync(restaurantId, dto.IngredientId);
 

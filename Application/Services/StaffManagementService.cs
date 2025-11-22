@@ -9,6 +9,7 @@ using Application.Features.StaffManagement.Dtos.Commands;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 
 namespace Application.Services
@@ -21,21 +22,33 @@ namespace Application.Services
         private readonly IStaffAssignmentRepository _staffAssignmentRepository;
         private readonly RoleManager<IdentityRole> _roleManager;
 
+        private readonly IValidator<AddStaffMemberDto> _addStaffMemberValidator;
+        private readonly IValidator<RemoveStaffMemberDto> _removeStaffMemberValidator;
+        private readonly IValidator<ChangeStaffMemberRoleDto> _changeStaffMemberRoleValidator;
+
         public StaffManagementService(
             IUnitOfWork unitOfWork,
             IRestaurantRepository restaurantRepository,
             IUserService userService,
             IStaffAssignmentRepository staffAssignmentRepository,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IValidator<AddStaffMemberDto> addStaffMemberValidator,
+            IValidator<RemoveStaffMemberDto> removeStaffMemberValidator,
+            IValidator<ChangeStaffMemberRoleDto> changeStaffMemberRoleValidator)
         {
             _unitOfWork = unitOfWork;
             _restaurantRepository = restaurantRepository;
             _userService = userService;
             _staffAssignmentRepository = staffAssignmentRepository;
             _roleManager = roleManager;
+            _addStaffMemberValidator = addStaffMemberValidator;
+            _removeStaffMemberValidator = removeStaffMemberValidator;
+            _changeStaffMemberRoleValidator = changeStaffMemberRoleValidator;
         }
         public async Task AddStaffMemberAsync(int restaurantId, AddStaffMemberDto dto)
         {
+            await _addStaffMemberValidator.ValidateAndThrowAsync(dto);
+
             var userToAdd = await _userService.FindByEmailOrThrowAsync(dto.Email);
             var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
             if (restaurant == null)
@@ -67,6 +80,8 @@ namespace Application.Services
 
         public async Task RemoveStaffMemberAsync(int restaurantId, RemoveStaffMemberDto dto)
         {
+            await _removeStaffMemberValidator.ValidateAndThrowAsync(dto);
+
             var userToRemove = await _userService.FindByEmailOrThrowAsync(dto.Email);
             var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
 
@@ -84,6 +99,8 @@ namespace Application.Services
 
         public async Task ChangeStaffMemberRoleAsync(int restaurantId, ChangeStaffMemberRoleDto dto)
         {
+            await _changeStaffMemberRoleValidator.ValidateAndThrowAsync(dto);
+
             var userToChange = await _userService.FindByEmailOrThrowAsync(dto.Email);
 
             var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);

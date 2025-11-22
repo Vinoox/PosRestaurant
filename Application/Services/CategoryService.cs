@@ -13,6 +13,7 @@ using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
+using FluentValidation;
 
 namespace Application.Services
 {
@@ -23,16 +24,23 @@ namespace Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRestaurantService _restaurantService;
 
+        private readonly IValidator<CreateCategoryDto> _createCategoryValidator;
+        private readonly IValidator<UpdateCategoryDto> _updateCategoryValidator;
+
         public CategoryService(
             ICategoryRepository categoryRepository,
             IMapper mapper,
             IUnitOfWork unitOfWork,
-            IRestaurantService restaurantService)
+            IRestaurantService restaurantService,
+            IValidator<UpdateCategoryDto> updateCategoryValidator,
+            IValidator<CreateCategoryDto> createCategoryValidator)
         {
             _categoryRepository = categoryRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _restaurantService = restaurantService;
+            _updateCategoryValidator = updateCategoryValidator;
+            _createCategoryValidator = createCategoryValidator;
         }
 
         public async Task<IEnumerable<CategorySummaryDto>> GetAllByRestaurantIdAsync(int restaurantId)
@@ -48,6 +56,8 @@ namespace Application.Services
         }
         public async Task<int> CreateAsync(int restaurantId, CreateCategoryDto dto)
         {
+            await _createCategoryValidator.ValidateAndThrowAsync(dto);
+
             await _restaurantService.FindByIdOrThrowAsync(restaurantId);
             var existingCategory = await _categoryRepository.GetByNameAsync(restaurantId, dto.Name);
             if (existingCategory != null)
@@ -62,6 +72,8 @@ namespace Application.Services
 
         public async Task UpdateAsync(int resturantId, int id, UpdateCategoryDto dto)
         {
+            await _updateCategoryValidator.ValidateAndThrowAsync(dto);
+
             var categoryToUpdate = await FindByIdOrThrowAsync(resturantId, id);
             categoryToUpdate.UpdateName(dto.Name);
             await _unitOfWork.CommitTransactionAsync();

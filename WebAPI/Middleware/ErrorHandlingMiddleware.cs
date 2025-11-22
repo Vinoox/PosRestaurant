@@ -4,6 +4,7 @@ using System.Security;
 using System.Text.Json;
 using Application.Common.Exceptions;
 using Domain.Common;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,6 +44,17 @@ namespace WebAPI.Middleware
                 Type = $"https://httpstatuses.com/{(int)statusCode}",
                 Instance = context.Request.Path
             };
+
+            if (exception is FluentValidation.ValidationException validationEx)
+            {
+                var errors = validationEx.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.ErrorMessage).ToArray());
+
+                problemDetails.Extensions["errors"] = errors;
+            }
 
             context.Response.ContentType = "application/problem+json";
             context.Response.StatusCode = (int)statusCode;

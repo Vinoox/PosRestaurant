@@ -8,7 +8,7 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Enums;
 
-namespace Application.Features.Users.Dtos.Commands
+namespace Application.Features.Auth.Commands
 {
     public class RegisterUserDto
     {

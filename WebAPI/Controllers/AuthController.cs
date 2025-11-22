@@ -1,5 +1,6 @@
-﻿using Application.Features.Users.Dtos.Commands;
+﻿using Application.Features.Auth.Commands;
 using Application.Interfaces;
+using Application.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
@@ -14,18 +15,18 @@ namespace WebAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly IAuthService _authService;
 
-        public AuthController(IUserService userService)
+        public AuthController(IAuthService authService)
         {
-            _userService = userService;
+            _authService = authService;
         }
 
         [SwaggerOperation(Summary = "Register new user")]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterUserDto dto)
         {
-            var result = await _userService.RegisterAsync(dto);
+            var result = await _authService.RegisterAsync(dto);
 
             if (!result.Succeeded)
             {
@@ -39,8 +40,7 @@ namespace WebAPI.Controllers
         [SwaggerOperation(Summary = "Step 1: Authenticates a user and returns available restaurants")]
         public async Task<IActionResult> Authenticate(AuthenticateDto dto)
         {
-            // ZMIANA: Poprawiona składnia i nazwy zmiennych
-            var result = await _userService.AuthenticateAsync(dto);
+            var result = await _authService.AuthenticateAsync(dto);
 
             if (result == null)
             {
@@ -61,7 +61,7 @@ namespace WebAPI.Controllers
                 return Unauthorized("Nieprawidłowy token uwierzytelniający.");
             }
 
-            var token = await _userService.GenerateContextualTokenAsync(userId, dto.RestaurantId);
+            var token = await _authService.GenerateContextualTokenAsync(userId, dto);
             return Ok(new { Token = token });
         }
     }

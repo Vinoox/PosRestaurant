@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Application.Features.Restaurants.Dtos;
 using Application.Features.Restaurants.Dtos.Queries;
 
-namespace Application.Features.Users.Dtos.Queries
+namespace Application.Features.Auth.Queries
 {
     public class AuthenticationResultDto
     {

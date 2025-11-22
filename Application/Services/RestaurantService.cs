@@ -12,6 +12,7 @@ using Application.Interfaces;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 
 namespace Application.Services
@@ -19,37 +20,33 @@ namespace Application.Services
     public class RestaurantService : IRestaurantService
     {
         private readonly IRestaurantRepository _restaurantRepository;
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IStaffAssignmentRepository _staffAssignmentRepository;
         private readonly IUserService _userService;
         private readonly IStaffManagementService _staffManagementService;
+
+        private readonly IValidator<CreateRestaurantDto> _createRestaurantValidator;
 
         public RestaurantService(
             IStaffManagementService staffManagementService,
             IRestaurantRepository restaurantRepository,
-            UserManager<User> userManager,
-            RoleManager<IdentityRole> roleManager,
             IMapper mapper,
-            IStaffAssignmentRepository staffAssignmentRepository,
             IUnitOfWork unitOfWork,
-            IUserService userService)
+            IUserService userService,
+            IValidator<CreateRestaurantDto> createRestaurantValidator)
         {
             _staffManagementService = staffManagementService;
             _restaurantRepository = restaurantRepository;
-            _userManager = userManager;
-            _roleManager = roleManager;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _staffAssignmentRepository = staffAssignmentRepository;
             _userService = userService;
+            _createRestaurantValidator = createRestaurantValidator;
         }
 
 
         public async Task<int> CreateAsync(CreateRestaurantDto dto, string creatorUserId)
         {
+            await _createRestaurantValidator.ValidateAndThrowAsync(dto);
             await _unitOfWork.BeginTransactionAsync();
             try
             {

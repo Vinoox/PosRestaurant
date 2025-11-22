@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json.Serialization;
 using Application;
-using Application.Features.Users.Dtos.Commands;
+using Application.Features.Auth.Commands;
 using Domain.Entities;
 using Domain.Interfaces;
 using FluentValidation;
