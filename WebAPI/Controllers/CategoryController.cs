@@ -47,9 +47,9 @@ namespace WebAPI.Controllers
 
         [HttpDelete("{categoryId}")]
         [SwaggerOperation(Summary = "Delete specific category")]
-        public async Task<IActionResult> DeleteCategory([FromRoute] int restaurantId, [FromRoute] int id)
+        public async Task<IActionResult> DeleteCategory([FromRoute] int restaurantId, [FromRoute] int categoryId)
         {
-            await _categoryService.DeleteAsync(restaurantId, id);
+            await _categoryService.DeleteAsync(restaurantId, categoryId);
             return NoContent();
         }
 
