@@ -26,6 +26,7 @@ namespace Infrastructure
             services.AddScoped<IPinHasher, PinHasher>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
             services.AddScoped<IStaffAssignmentRepository, StaffAssignmentRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
             return services;
         }
 
@@ -39,7 +40,7 @@ namespace Infrastructure
                 options.Password.RequireUppercase = false;
                 options.Password.RequireLowercase = false;
             })
-            .AddEntityFrameworkStores<PosRestaurantContext>() // <-- Pamiętaj, aby użyć nazwy Twojego DbContextu
+            .AddEntityFrameworkStores<PosRestaurantContext>()
             .AddDefaultTokenProviders();
 
             return services;

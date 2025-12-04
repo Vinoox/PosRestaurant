@@ -9,7 +9,7 @@ namespace WebAPI.Controllers
 {
     [Route("api/restaurants/{restaurantId}/staff")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class StaffManagementController : ControllerBase
     {
         private readonly IStaffManagementService _staffManagementService;
@@ -29,8 +29,16 @@ namespace WebAPI.Controllers
             _changeStaffMemberRoleDtoValidator = changeStaffMemberRoleDto;
         }
 
+        [HttpGet]
+        [SwaggerOperation(Summary = "Get all staff members of a restaurant")]
+        public async Task<IActionResult> GetStaffMembers([FromRoute] int restaurantId)
+        {
+            var staffMembers = await _staffManagementService.GetStaffMembersAsync(restaurantId);
+            return Ok(staffMembers);
+        }
+
         [HttpPost]
-        [Authorize(Policy = "IsRestaurantAdmin")]
+        //[Authorize(Policy = "IsRestaurantAdmin")]
         [SwaggerOperation(Summary = "Add a staff member to a restaurant")]
         public async Task<IActionResult> AddStaffMember([FromRoute] int restaurantId, [FromBody]AddStaffMemberDto dto)
         {
@@ -40,26 +48,26 @@ namespace WebAPI.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var adminRestaurantIdClaim = User.FindFirst("RestaurantId");
-            if (adminRestaurantIdClaim == null || adminRestaurantIdClaim.Value != restaurantId.ToString())
-            {
-                return Forbid("Nie masz uprawnień do zarządzania tą restauracją");
-            }
+            //var adminRestaurantIdClaim = User.FindFirst("RestaurantId");
+            //if (adminRestaurantIdClaim == null || adminRestaurantIdClaim.Value != restaurantId.ToString())
+            //{
+            //    return Forbid("Nie masz uprawnień do zarządzania tą restauracją");
+            //}
 
             await _staffManagementService.AddStaffMemberAsync(restaurantId, dto);
             return NoContent();
         }
 
         [HttpDelete("{dto.Email}")]
-        [Authorize(Policy = "IsRestaurantAdmin")]
+        //[Authorize(Policy = "IsRestaurantAdmin")]
         [SwaggerOperation(Summary = "Remove a staff member from a restaurant")]
         public async Task<IActionResult> RemoveStaffMember([FromRoute] int restaurantId, [FromBody] RemoveStaffMemberDto dto)
         {
-            var validationResult = await _removeStaffMemberDtoValidator.ValidateAsync(dto);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
+            //var validationResult = await _removeStaffMemberDtoValidator.ValidateAsync(dto);
+            //if (!validationResult.IsValid)
+            //{
+            //    return BadRequest(validationResult.Errors);
+            //}
 
             var adminRestaurantIdClaim = User.FindFirst("RestaurantId");
             if (adminRestaurantIdClaim == null || adminRestaurantIdClaim.Value != restaurantId.ToString())
@@ -72,7 +80,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPost("{dto.Email}/role")]
-        [Authorize(Policy = "IsRestaurantAdmin")]
+        //[Authorize(Policy = "IsRestaurantAdmin")]
         [SwaggerOperation(Summary = "Change a role of staff member")]
         public async Task<IActionResult> ChangeMemberRole([FromRoute] int restaurantId, [FromBody] ChangeStaffMemberRoleDto dto)
         {

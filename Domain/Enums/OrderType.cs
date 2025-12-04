@@ -9,7 +9,7 @@ namespace Domain.Enums
     public enum OrderType
     {
         DineIn,
-        TakeAway,
+        Takeaway,
         Delivery
     }
 }

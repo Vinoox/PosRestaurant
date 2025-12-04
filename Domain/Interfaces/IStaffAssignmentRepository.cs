@@ -9,6 +9,7 @@ namespace Domain.Interfaces
 {
     public interface IStaffAssignmentRepository : IGenericRepository<StaffAssignment>
     {
+        Task<IEnumerable<StaffAssignment>> GetStaffMembersAsync(int restaurantId);
         Task<StaffAssignment?> FindByUserIdAndRestaurantIdAsync(string userId, int restaurantId);
         Task<IEnumerable<StaffAssignment>> GetByRestaurantIdAsync(int restaurantId);
     }

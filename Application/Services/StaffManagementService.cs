@@ -6,7 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.Common.Exceptions;
 using Application.Features.StaffManagement.Dtos.Commands;
+using Application.Features.StaffManagement.Dtos.Queries;
 using Application.Interfaces;
+using AutoMapper;
 using Domain.Entities;
 using Domain.Interfaces;
 using FluentValidation;
@@ -21,6 +23,7 @@ namespace Application.Services
         private readonly IRestaurantRepository _restaurantRepository;
         private readonly IStaffAssignmentRepository _staffAssignmentRepository;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IMapper _mapper;
 
         private readonly IValidator<AddStaffMemberDto> _addStaffMemberValidator;
         private readonly IValidator<RemoveStaffMemberDto> _removeStaffMemberValidator;
@@ -34,7 +37,8 @@ namespace Application.Services
             RoleManager<IdentityRole> roleManager,
             IValidator<AddStaffMemberDto> addStaffMemberValidator,
             IValidator<RemoveStaffMemberDto> removeStaffMemberValidator,
-            IValidator<ChangeStaffMemberRoleDto> changeStaffMemberRoleValidator)
+            IValidator<ChangeStaffMemberRoleDto> changeStaffMemberRoleValidator,
+            IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _restaurantRepository = restaurantRepository;
@@ -44,6 +48,17 @@ namespace Application.Services
             _addStaffMemberValidator = addStaffMemberValidator;
             _removeStaffMemberValidator = removeStaffMemberValidator;
             _changeStaffMemberRoleValidator = changeStaffMemberRoleValidator;
+            _mapper = mapper;
+        }
+
+        public async Task<IEnumerable<StaffAssignmentDto>> GetStaffMembersAsync(int restaurantId)
+        {
+            var restaurant = await _restaurantRepository.GetByIdAsync(restaurantId);
+            if (restaurant == null)
+                throw new NotFoundException("Restauracja", restaurantId);
+
+            var staffMembers = restaurant.StaffAssignments;
+            return _mapper.Map<IEnumerable<StaffAssignmentDto>>(staffMembers);
         }
         public async Task AddStaffMemberAsync(int restaurantId, AddStaffMemberDto dto)
         {

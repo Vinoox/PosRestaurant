@@ -41,7 +41,7 @@ namespace Domain.Entities
             int restaurantId,
             int dailySequenceNumber,
             OrderType type,
-            DateTime targetDate,
+            DateTime? targetDate,
             string? customerName,
             string? phoneNumber,
             Address? address)
@@ -131,7 +131,7 @@ namespace Domain.Entities
             public string? City { get; private set; }
             public string? PostalCode { get; private set; }
             private Address() { }
-            public Address Create(string street, string? LocalNumber, string? city, string? postalCode)
+            public static Address Create(string street, string? LocalNumber, string? city, string? postalCode)
             {
                 if (string.IsNullOrWhiteSpace(street))
                     throw new DomainException("Ulica jest wymagana");

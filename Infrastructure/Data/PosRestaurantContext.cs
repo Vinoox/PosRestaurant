@@ -24,14 +24,12 @@ namespace Infrastructure.Data
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<ProductIngredient> ProductIngredients { get; set; }
         public DbSet<StaffAssignment> StaffAssignments { get; set; }
+        public DbSet<Order> Orders { get; set; }
 
-
-        // --- SKONFIGURUJ RELACJE ---
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder); //konieczne dla IdentityDbContext
+            base.OnModelCreating(modelBuilder);
 
-            // --- Konfiguracja dla Product ---
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.Property(p => p.Price).HasColumnType("decimal(18, 2)");
@@ -47,7 +45,45 @@ namespace Infrastructure.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // --- Konfiguracja dla Category ---
+            modelBuilder.Entity<Order>(b =>
+            {
+                b.OwnsOne(o => o.DeliveryAddress, a =>
+                {
+                    a.Property(x => x.Street).HasMaxLength(100).HasColumnName("DeliveryAddress_Street");
+                    a.Property(x => x.City).HasMaxLength(50).HasColumnName("DeliveryAddress_City");
+                    a.Property(x => x.PostalCode).HasMaxLength(10).HasColumnName("DeliveryAddress_PostalCode");
+                    a.Property(x => x.LocalNumber).HasMaxLength(10).HasColumnName("DeliveryAddress_LocalNumber");
+                });
+
+                b.Property(o => o.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                b.Property(o => o.Type)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+
+                b.HasMany(o => o.Items)
+                    .WithOne(i => i.Order)
+                    .HasForeignKey(i => i.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasOne(o => o.Driver)
+                    .WithMany()
+                    .HasForeignKey(o => o.DriverId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<OrderItem>(b =>
+            {
+                b.Property(oi => oi.UnitPrice)
+                    .HasPrecision(18, 2);
+
+                b.Property(oi => oi.ProductName)
+                    .IsRequired()
+                    .HasMaxLength(200);
+            });
+
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.HasOne(c => c.Restaurant)
@@ -56,7 +92,6 @@ namespace Infrastructure.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // --- Konfiguracja dla ProductIngredient (tabela łącząca wiele-do-wielu) ---
             modelBuilder.Entity<ProductIngredient>(entity =>
             {
                 entity.HasKey(pi => new { pi.ProductId, pi.IngredientId });
@@ -68,6 +103,7 @@ namespace Infrastructure.Data
                 entity.HasOne(pi => pi.Ingredient)
                       .WithMany()
                       .HasForeignKey(pi => pi.IngredientId);
+
                 entity.Property(pi => pi.Unit)
                     .HasConversion<string>();
                 entity.Property(pi => pi.Amount).HasPrecision(18, 4);
@@ -75,13 +111,18 @@ namespace Infrastructure.Data
 
             modelBuilder.Entity<StaffAssignment>(entity =>
             {
-                entity.HasKey(sa => new { sa.UserId, sa.RestaurantId, sa.RoleId });
+                entity.HasKey(sa => sa.Id);
+
+                entity.HasIndex(sa => new { sa.UserId, sa.RestaurantId, sa.RoleId }).IsUnique();
+
                 entity.HasOne(sa => sa.User)
                       .WithMany(u => u.StaffAssignments)
                       .HasForeignKey(sa => sa.UserId);
+
                 entity.HasOne(sa => sa.Restaurant)
                       .WithMany(r => r.StaffAssignments)
                       .HasForeignKey(sa => sa.RestaurantId);
+
                 entity.HasOne(sa => sa.Role)
                       .WithMany()
                       .HasForeignKey(sa => sa.RoleId);
@@ -89,7 +130,6 @@ namespace Infrastructure.Data
         }
 
 
-        // --- ZMIANA: PRZEBUDOWANA LOGIKA ZAPISYWANIA ZMIAN ---
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
@@ -103,17 +143,12 @@ namespace Infrastructure.Data
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
-        // --- Metoda pomocnicza, która wywołuje inne, wyspecjalizowane metody ---
         private void ApplyCustomLogicBeforeSaving()
         {
             SetAuditProperties();
             ValidateTenantSecurity();
         }
 
-        /// <summary>
-        /// Prywatna metoda pomocnicza, która zawiera logikę ustawiania pól audytowych (CreatedAt, LastModified).
-        /// Używamy jej, aby uniknąć powtarzania tego samego kodu w obu wersjach SaveChangesAsync.
-        /// </summary>
         private void SetAuditProperties()
         {
             foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
@@ -136,21 +171,18 @@ namespace Infrastructure.Data
         private void ValidateTenantSecurity()
         {
             var restaurantId = _currentUserService.RestaurantId;
-            if (restaurantId == null) return; // Zezwól na operacje bez kontekstu (np. seedowanie, SuperAdmin)
+            if (restaurantId == null) return;
 
-            foreach (var entry in ChangeTracker.Entries<ITenantEntity>()) // Używamy interfejsu ITenantEntity
+            foreach (var entry in ChangeTracker.Entries<ITenantEntity>())
             {
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        // Automatycznie przypisz nową encję do restauracji zalogowanego użytkownika.
                         entry.Entity.RestaurantId = restaurantId.Value;
                         break;
 
                     case EntityState.Modified:
                     case EntityState.Deleted:
-                        // KRYTYCZNE ZABEZPIECZENIE: Sprawdź, czy użytkownik nie próbuje
-                        // modyfikować lub usuwać danych z innej restauracji.
                         if (entry.Entity.RestaurantId != restaurantId.Value)
                         {
                             throw new SecurityException("Próba modyfikacji danych należących do innej restauracji.");

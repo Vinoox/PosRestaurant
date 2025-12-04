@@ -22,6 +22,7 @@ namespace Application
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IStaffManagementService, StaffManagementService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IOrderService, OrderService>();
 
             return services;
         }

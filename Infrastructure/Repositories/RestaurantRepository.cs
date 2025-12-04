@@ -22,7 +22,6 @@ namespace Infrastructure.Repositories
                 .Include(r => r.StaffAssignments).ThenInclude(sa => sa.Role)
                 .Include(r => r.Categories).ThenInclude(c => c.Products).ThenInclude(p => p.ProductIngredients)
                 .Include(r => r.Ingredients)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
         public async Task<IEnumerable<Restaurant>> FindByUserIdAsync(string userId)

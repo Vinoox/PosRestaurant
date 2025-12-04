@@ -14,8 +14,8 @@ namespace WebAPI.Controllers
 {
     [Route("api/restaurants/{restaurantId}/products")]
     [ApiController]
-    [Authorize]
-    [ServiceFilter(typeof(ValidateRestaurantAccessFilter))]
+    //[Authorize]
+    //[ServiceFilter(typeof(ValidateRestaurantAccessFilter))]
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;

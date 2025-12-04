@@ -9,7 +9,7 @@ namespace WebAPI.Controllers
 {
     [Route("api/users")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -21,7 +21,7 @@ namespace WebAPI.Controllers
 
         [SwaggerOperation(Summary = "Get all users (Admin only)")]
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public IActionResult GetAllUsers()
         {
             var users = _userService.GetAllUsers();
@@ -47,7 +47,7 @@ namespace WebAPI.Controllers
             // UWAGA: Należałoby sprawdzić, czy zalogowany użytkownik ma prawo aktualizować ten profil
             // (np. czy to jego własny profil, lub czy jest adminem). To kolejny krok w rozbudowie.
             await _userService.UpdateProfileAsync(id, dto);
-            return NoContent(); // 204 No Content to standardowa odpowiedź dla udanej aktualizacji.
+            return NoContent();
         }
 
         [SwaggerOperation(Summary = "Change user password")]
@@ -64,8 +64,8 @@ namespace WebAPI.Controllers
 
         [SwaggerOperation(Summary = "Delete user (Admin only)")]
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")] // Tylko Admin może usuwać użytkowników
-        public async Task<IActionResult> DeleteUser(string id) // ZMIANA: id jest teraz stringiem
+        //[Authorize(Roles = "Admin")] // Tylko Admin może usuwać użytkowników
+        public async Task<IActionResult> DeleteUser(string id)
         {
             await _userService.DeleteAsync(id);
             return NoContent();

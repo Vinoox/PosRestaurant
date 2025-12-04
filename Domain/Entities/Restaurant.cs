@@ -26,8 +26,8 @@ namespace Domain.Entities
         private readonly List<StaffAssignment> _staffAssignments = new();
         public virtual IReadOnlyCollection<StaffAssignment> StaffAssignments => _staffAssignments.AsReadOnly();
 
-         //private readonly List<Order> _orders = new();
-         //public virtual IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
+        private readonly List<Order> _orders = new();
+        public virtual IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
         private Restaurant(){}
 
        public static Restaurant Create(string name)

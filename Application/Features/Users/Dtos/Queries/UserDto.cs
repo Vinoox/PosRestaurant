@@ -14,12 +14,12 @@ namespace Application.Features.Users.Dtos.Queries
 {
     public class UserDto : IMap
     {
-        public string Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public IdentityRole globalRole { get; set; }
-        public ICollection<RestaurantSummaryDto> Restaurants { get; set; }
+        public required string Id { get; set; }
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+        public required string Email { get; set; }
+        public required IdentityRole globalRole { get; set; }
+        public required ICollection<RestaurantSummaryDto> Restaurants { get; set; }
 
         public void Mapping(Profile profile)
         {
