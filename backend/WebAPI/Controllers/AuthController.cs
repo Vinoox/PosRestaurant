@@ -24,7 +24,7 @@ namespace WebAPI.Controllers
 
         [SwaggerOperation(Summary = "Register new user")]
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterUserDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
         {
             var result = await _authService.RegisterAsync(dto);
 
