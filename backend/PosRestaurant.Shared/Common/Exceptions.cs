@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PosRestaurant.Shared.Exceptions;
+namespace PosRestaurant.Shared.Common;
 
 public class DomainException : Exception
 {

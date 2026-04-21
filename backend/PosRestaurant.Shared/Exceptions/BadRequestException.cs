@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Application.Common.Exceptions
+namespace PosRestaurant.Shared.Exceptions
 {
     public class BadRequestException : Exception
     {

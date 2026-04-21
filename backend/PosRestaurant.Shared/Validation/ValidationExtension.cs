@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 
-namespace Application.Common.Validation
+namespace PosRestaurant.Shared.Validation
 {
     public static class ValidationExtension
     {

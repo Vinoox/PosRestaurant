@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 
-namespace Application.Common.Mappings
+namespace PosRestaurant.Shared.Mappings
 {
     public class MappingProfile : Profile
     {
