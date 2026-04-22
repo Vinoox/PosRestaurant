@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Catalog.Domain.Entities;
+﻿using Catalog.Domain.Entities;
 using PosRestaurant.Shared.Interfaces;
 
-namespace Domain.Interfaces
+namespace Catalog.Domain.Interfaces
 {
     public interface ICategoryRepository : IGenericRepository<Category>
     {

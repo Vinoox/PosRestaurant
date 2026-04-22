@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PosRestaurant.Shared.Common;
+﻿using PosRestaurant.Shared.Entities;
 using PosRestaurant.Shared.Exceptions;
+using PosRestaurant.Shared.Interfaces;
 
 namespace Catalog.Domain.Entities
 {

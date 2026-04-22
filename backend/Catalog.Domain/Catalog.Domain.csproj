@@ -10,8 +10,4 @@
     <ProjectReference Include="..\PosRestaurant.Shared\PosRestaurant.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Exceptions\" />
-  </ItemGroup>
-
 </Project>
