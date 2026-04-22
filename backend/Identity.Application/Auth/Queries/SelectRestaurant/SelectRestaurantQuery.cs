@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Identity.Application.Auth.Commands
+namespace Identity.Application.Auth.Queries.SelectRestaurant
 {
-    public class SelectRestaurantDto
+    public class SelectRestaurantQuery
     {
         public required int RestaurantId { get; set; }
     }

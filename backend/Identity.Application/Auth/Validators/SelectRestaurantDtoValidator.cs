@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
 using FluentValidation.Validators;
-using Identity.Application.Auth.Commands;
+using Identity.Application.Auth.Queries.SelectRestaurant;
 
 namespace Identity.Application.Auth.Validators
 {
-    public class SelectRestaurantDtoValidator : AbstractValidator<SelectRestaurantDto>
+    public class SelectRestaurantDtoValidator : AbstractValidator<SelectRestaurantQuery>
     {
         public SelectRestaurantDtoValidator()
         {

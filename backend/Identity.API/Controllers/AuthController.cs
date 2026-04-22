@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Identity.Application.Auth.Commands;
+using Identity.Application.Auth.Commands.Authenticate;
+using Identity.Application.Auth.Commands.RegisterUser;
 using Identity.Application.Auth.Queries;
 using Identity.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,7 @@ namespace Identity.API.Controllers
         [HttpPost("register")]
         [AllowAnonymous]
         [SwaggerOperation(Summary = "Rejestracja nowego użytkownika")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterUserCommand dto)
         {
             await _authService.RegisterAsync(dto);
             return Ok();
@@ -31,7 +32,7 @@ namespace Identity.API.Controllers
         [HttpPost("login")]
         [AllowAnonymous]
         [SwaggerOperation(Summary = "Logowanie użytkownika i pobranie tokenu JWT")]
-        public async Task<IActionResult> Login([FromBody] AuthenticateDto dto)
+        public async Task<IActionResult> Login([FromBody] AuthenticateCommand dto)
         {
             var result = await _authService.AuthenticateAsync(dto);
             return Ok(result);

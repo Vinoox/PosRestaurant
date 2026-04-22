@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using Identity.Application.Auth.Commands;
+using Identity.Application.Auth.Commands.Authenticate;
 
 namespace Identity.Application.Auth.Validators
 {
-    public class AuthenticateDtoValidator : AbstractValidator<AuthenticateDto>
+    public class AuthenticateDtoValidator : AbstractValidator<AuthenticateCommand>
     {
         public AuthenticateDtoValidator()
         {

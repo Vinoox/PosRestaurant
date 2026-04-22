@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Identity.Application.Auth.Commands
+namespace Identity.Application.Auth.Commands.LoginByPin
 {
-    public class AuthenticateDto
+    public class LoginByPinDto
     {
         public required string Email { get; set; }
-        public required string Password { get; set; }
+        public required string Pin { get; set; }
     }
 }

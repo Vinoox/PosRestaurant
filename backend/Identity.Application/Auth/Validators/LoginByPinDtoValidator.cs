@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Identity.Application.Auth.Commands;
+using Identity.Application.Auth.Commands.LoginByPin;
 
 namespace Identity.Application.Auth.Validators
 {

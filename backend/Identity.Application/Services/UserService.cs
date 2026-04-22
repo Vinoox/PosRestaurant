@@ -5,8 +5,11 @@ using System.Threading.Tasks;
 using AutoMapper;
 using FluentValidation;
 using Identity.Application.Interfaces;
-using Identity.Application.Users.Dtos.Commands;
-using Identity.Application.Users.Dtos.Queries;
+using Identity.Application.Users.Commands.ChangePassword;
+using Identity.Application.Users.Commands.ChangePin;
+using Identity.Application.Users.Commands.UpdateUserProfile;
+using Identity.Application.Users.Dtos.Queries.GetUser;
+
 // Prawidłowa ścieżka do encji User
 using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -21,17 +24,17 @@ namespace Identity.Application.Services
         private readonly IPinHasher _pinHasher;
         private readonly IMapper _mapper;
 
-        private readonly IValidator<ChangePasswordDto> _changePasswordValidator;
-        private readonly IValidator<ChangePinDto> _changePinValidator;
-        private readonly IValidator<UpdateUserProfileDto> _updateUserProfileValidator;
+        private readonly IValidator<ChangePasswordCommand> _changePasswordValidator;
+        private readonly IValidator<ChangePinCommand> _changePinValidator;
+        private readonly IValidator<UpdateUserProfileCommand> _updateUserProfileValidator;
 
         public UserService(
             UserManager<User> userManager,
             IPinHasher pinHasher,
             IMapper mapper,
-            IValidator<ChangePasswordDto> changePasswordValidator,
-            IValidator<ChangePinDto> changePinValidator,
-            IValidator<UpdateUserProfileDto> updateUserProfileValidator)
+            IValidator<ChangePasswordCommand> changePasswordValidator,
+            IValidator<ChangePinCommand> changePinValidator,
+            IValidator<UpdateUserProfileCommand> updateUserProfileValidator)
         {
             _userManager = userManager;
             _pinHasher = pinHasher;
@@ -41,16 +44,16 @@ namespace Identity.Application.Services
             _updateUserProfileValidator = updateUserProfileValidator;
         }
 
-        public async Task<UserDto?> GetByIdAsync(string userId)
+        public async Task<GetUserQuery?> GetByIdAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            return _mapper.Map<UserDto>(user);
+            return _mapper.Map<GetUserQuery>(user);
         }
 
-        public IEnumerable<UserDto> GetAllUsers()
+        public IEnumerable<GetUserQuery> GetAllUsers()
         {
             var users = _userManager.Users.ToList();
-            return _mapper.Map<IEnumerable<UserDto>>(users);
+            return _mapper.Map<IEnumerable<GetUserQuery>>(users);
         }
 
         public async Task<User> FindByEmailOrThrowAsync(string email)
@@ -69,14 +72,14 @@ namespace Identity.Application.Services
             return user;
         }
 
-        public async Task<IdentityResult> ChangePasswordAsync(string userId, ChangePasswordDto dto)
+        public async Task<IdentityResult> ChangePasswordAsync(string userId, ChangePasswordCommand dto)
         {
             await _changePasswordValidator.ValidateAndThrowAsync(dto);
             var user = await FindByIdOrThrowAsync(userId);
             return await _userManager.ChangePasswordAsync(user, dto.OldPassword, dto.NewPassword);
         }
 
-        public async Task UpdateProfileAsync(string userId, UpdateUserProfileDto dto)
+        public async Task UpdateProfileAsync(string userId, UpdateUserProfileCommand dto)
         {
             await _updateUserProfileValidator.ValidateAndThrowAsync(dto);
             var user = await FindByIdOrThrowAsync(userId);
@@ -88,7 +91,7 @@ namespace Identity.Application.Services
             await _userManager.UpdateAsync(user);
         }
 
-        public async Task ChangePinAsync(string userId, ChangePinDto dto)
+        public async Task ChangePinAsync(string userId, ChangePinCommand dto)
         {
             await _changePinValidator.ValidateAndThrowAsync(dto);
             var user = await FindByIdOrThrowAsync(userId);

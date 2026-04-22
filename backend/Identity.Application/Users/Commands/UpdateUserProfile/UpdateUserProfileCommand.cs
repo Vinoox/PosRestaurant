@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Identity.Application.Users.Dtos.Commands
+namespace Identity.Application.Users.Commands.UpdateUserProfile
 {
-    public class UpdateUserProfileDto
+    public class UpdateUserProfileCommand
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }

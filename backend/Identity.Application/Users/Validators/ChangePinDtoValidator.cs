@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using Identity.Application.Users.Dtos.Commands;
+using Identity.Application.Users.Commands.ChangePin;
 
-namespace Identity.Application.Users.Dtos.Validators
+namespace Identity.Application.Users.Validators
 {
-    public class ChangePinDtoValidator : AbstractValidator<ChangePinDto>
+    public class ChangePinDtoValidator : AbstractValidator<ChangePinCommand>
     {
         public ChangePinDtoValidator()
         {

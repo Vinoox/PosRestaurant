@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using Identity.Application.Users.Dtos.Commands;
+using Identity.Application.Users.Commands.ChangePassword;
 
-namespace Identity.Application.Users.Dtos.Validators
+namespace Identity.Application.Users.Validators
 {
-    public class ChangePasswordDtoValidator : AbstractValidator<ChangePasswordDto>
+    public class ChangePasswordDtoValidator : AbstractValidator<ChangePasswordCommand>
     {
         public ChangePasswordDtoValidator()
         {

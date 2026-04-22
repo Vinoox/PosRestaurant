@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Identity.Application.Users.Dtos.Commands
+namespace Identity.Application.Users.Commands.ChangePin
 {
-    public class ChangePinDto
+    public class ChangePinCommand
     {
         public required string OldPin { get; set; }
         public required string NewPin { get; set; }

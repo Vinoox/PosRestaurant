@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Identity.Domain.Entities;
 
-namespace Identity.Application.Auth.Commands
+namespace Identity.Application.Auth.Commands.RegisterUser
 {
-    public class RegisterUserDto
+    public class RegisterUserCommand
     {
         public required string FirstName { get; set; }
         public required string LastName { get; set; }

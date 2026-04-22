@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using Identity.Application.Auth.Commands;
+using Identity.Application.Auth.Commands.RegisterUser;
 
 namespace Identity.Application.Auth.Validators
 {
-    public class RegisterUserDtoValidator : AbstractValidator<RegisterUserDto>
+    public class RegisterUserDtoValidator : AbstractValidator<RegisterUserCommand>
     {
         public RegisterUserDtoValidator()
         {

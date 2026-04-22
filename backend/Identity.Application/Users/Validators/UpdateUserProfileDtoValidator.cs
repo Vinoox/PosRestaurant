@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentValidation;
-using Identity.Application.Users.Dtos.Commands;
+using Identity.Application.Users.Commands.UpdateUserProfile;
 
-namespace Identity.Application.Users.Dtos.Validators
+namespace Identity.Application.Users.Validators
 {
-    public class UpdateUserProfileDtoValidator: AbstractValidator<UpdateUserProfileDto>
+    public class UpdateUserProfileDtoValidator: AbstractValidator<UpdateUserProfileCommand>
     {
         public UpdateUserProfileDtoValidator()
         {

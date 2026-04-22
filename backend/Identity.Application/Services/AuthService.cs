@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
-using Identity.Application.Auth.Commands;
+using Identity.Application.Auth.Commands.Authenticate;
+using Identity.Application.Auth.Commands.LoginByPin;
+using Identity.Application.Auth.Commands.RegisterUser;
 using Identity.Application.Auth.Queries;
 using Identity.Application.Interfaces;
 using Identity.Domain.Entities;
@@ -18,8 +20,8 @@ namespace Identity.Application.Services
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
         private readonly IUserService _userService;
 
-        private readonly IValidator<RegisterUserDto> _registerUserValidator;
-        private readonly IValidator<AuthenticateDto> _authenticateValidator;
+        private readonly IValidator<RegisterUserCommand> _registerUserValidator;
+        private readonly IValidator<AuthenticateCommand> _authenticateValidator;
         private readonly IValidator<LoginByPinDto> _loginByPinValidator;
 
         public AuthService(
@@ -27,9 +29,9 @@ namespace Identity.Application.Services
             IUserService userService,
             IPinHasher pinHasher,
             IJwtTokenGenerator jwtTokenGenerator,
-            IValidator<AuthenticateDto> authenticateValidator,
+            IValidator<AuthenticateCommand> authenticateValidator,
             IValidator<LoginByPinDto> loginByPinValidator,
-            IValidator<RegisterUserDto> registerValidator)
+            IValidator<RegisterUserCommand> registerValidator)
         {
             _userManager = userManager;
             _userService = userService;
@@ -40,7 +42,7 @@ namespace Identity.Application.Services
             _registerUserValidator = registerValidator;
         }
 
-        public async Task<AuthenticationResultDto?> AuthenticateAsync(AuthenticateDto dto)
+        public async Task<AuthenticationResultDto?> AuthenticateAsync(AuthenticateCommand dto)
         {
             await _authenticateValidator.ValidateAndThrowAsync(dto);
 
@@ -56,7 +58,7 @@ namespace Identity.Application.Services
             };
         }
 
-        public async Task<IdentityResult> RegisterAsync(RegisterUserDto dto)
+        public async Task<IdentityResult> RegisterAsync(RegisterUserCommand dto)
         {
             await _registerUserValidator.ValidateAndThrowAsync(dto);
 
